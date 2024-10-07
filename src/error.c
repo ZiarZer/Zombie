@@ -60,8 +60,8 @@ void print_runtime_error(char **program, char *filename,
     char *error_messages[] = {
         "Pointer out of bounds (upper bound)\n",
         "Pointer out of bounds (lower bound)\n",
-        "Invalid value (cannot increment value "
-        "already at 255)\n",
+        ("Invalid value (cannot increment value "
+        "already at 255)\n"),
         "Invalid value (cannot decrement value already at 0)\n"
     };
 

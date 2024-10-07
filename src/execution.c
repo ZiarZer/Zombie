@@ -51,8 +51,44 @@ void brackets_jump(char **program, struct char_coords *coordinates,
     }
 }
 
+void putescchar(char c) {
+    switch (c) {
+    case '\0':
+        printf("NUL");
+        break;
+    case '\1':
+        printf("SOH");
+        break;
+    case '\n':
+        printf("LF");
+        break;
+    case '\033':
+        printf("ESC");
+        break;
+    case ' ':
+        printf("SPACE");
+        break;
+    default:
+        putchar(c);
+    }
+}
+
+void outputchar(unsigned char *array, ssize_t array_pos, ssize_t i, ssize_t j, int debug_level)
+{
+    if (!debug_level)
+    {
+        putchar(array[array_pos]);
+    }
+    else
+    {
+        printf("\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] (\033[34m%3d\033[0m) ", i, j, array_pos, array[array_pos]);
+        putescchar(array[array_pos]);
+        printf("\033[0m\n");
+    }
+}
+
 int exec_command(char **program, struct char_coords *coordinates,
-                 unsigned char *array, ssize_t *array_pos)
+                 unsigned char *array, ssize_t *array_pos, int log_level)
 {
     ssize_t *i = &(coordinates->i);
     ssize_t *j = &(coordinates->j);
@@ -63,8 +99,9 @@ int exec_command(char **program, struct char_coords *coordinates,
     else if (program[*i][*j] == '+' || program[*i][*j] == '-')
         return modify_pointed_value(&array[*array_pos], program[*i][*j] == '+');
 
-    else if (program[*i][*j] == '.')
-        putchar(array[*array_pos]);
+    else if (program[*i][*j] == '.') {
+        outputchar(array, *array_pos, *i, *j, log_level);
+    }
 
     else if (program[*i][*j] == ',')
         array[*array_pos] = getchar();
@@ -76,7 +113,7 @@ int exec_command(char **program, struct char_coords *coordinates,
 }
 
 int run_program(char **program, char *filename, struct bracket_pair *brackets,
-                ssize_t array_size)
+                ssize_t array_size, int log_level)
 {
     unsigned char *array = calloc(array_size, sizeof(char));
 
@@ -86,7 +123,7 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
 
     while (program[coordinates.i])
     {
-        command_result = exec_command(program, &coordinates, array, &array_pos);
+        command_result = exec_command(program, &coordinates, array, &array_pos, log_level);
 
         if (command_result == -1)
             brackets_jump(program, &coordinates, brackets, array[array_pos]);

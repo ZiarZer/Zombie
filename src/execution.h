@@ -9,6 +9,6 @@ void brackets_jump(char **program, struct char_coords *coordinates,
                    unsigned char current_pointed_value);
 
 int run_program(char **program, char *filename, struct bracket_pair *brackets,
-                ssize_t array_size);
+                ssize_t array_size, int debug_level);
 
 #endif /* EXECUTION_H */
