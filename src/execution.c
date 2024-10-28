@@ -104,7 +104,10 @@ int exec_command(char **program, struct char_coords *coordinates,
     }
 
     else if (program[*i][*j] == ',')
-        array[*array_pos] = getchar();
+    {
+        char c = getchar();
+        array[*array_pos] = c == EOF ? '\0' : c;
+    }
 
     else if (program[*i][*j] == '[' || program[*i][*j] == ']')
         return -1;
