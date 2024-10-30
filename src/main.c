@@ -31,8 +31,10 @@ int main(int argc, char *argv[])
     }
 
     struct bracket_pair *brackets = get_bracket_pairs(program, argv[1]);
-    if (!brackets)
-        return free_and_return(program, brackets, NULL, 2);
+    if (!brackets) {
+        free_all(program, brackets, NULL);
+        return 2;
+    }
 
     return run_program(program, argv[1], brackets, array_size, debug_level);
 }

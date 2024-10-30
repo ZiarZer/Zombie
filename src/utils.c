@@ -1,7 +1,7 @@
 #include "utils.h"
 
-int free_and_return(char **program, struct bracket_pair *brackets,
-                    unsigned char *array, int return_value)
+void free_all(char **program, struct bracket_pair *brackets,
+                    unsigned char *array)
 {
     if (brackets)
         free(brackets);
@@ -12,8 +12,6 @@ int free_and_return(char **program, struct bracket_pair *brackets,
 
     if (array)
         free(array);
-
-    return return_value;
 }
 
 int check_array_size(char *array_size_string)

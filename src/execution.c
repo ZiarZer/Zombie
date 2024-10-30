@@ -168,13 +168,15 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
         else if (command_result != 0)
         {
             print_runtime_error(program, filename, coordinates, command_result);
-            return free_and_return(program, brackets, array, 3);
+            free_all(program, brackets, array);
+            return 3;
         }
         else if (array_pos >= array_size || array_pos < 0)
         {
             print_runtime_error(program, filename, coordinates,
                                 array_pos < 0 ? 2 : 1);
-            return free_and_return(program, brackets, array, 3);
+            free_all(program, brackets, array);
+            return 3;
         }
 
         if (!program[coordinates.i][coordinates.j++])
@@ -183,6 +185,7 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
             coordinates.j = 0;
         }
     }
-
-    return free_and_return(program, brackets, array, command_result);
+    
+    free_all(program, brackets, array);
+    return command_result;
 }
