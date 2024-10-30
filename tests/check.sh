@@ -108,11 +108,12 @@ else
     color="$red"
 fi
 printf "$bold[$color"
-for j in $(seq "$bars"); do
-    printf "="
-done
-for j in $(seq $((20 - bars))); do
-    printf ' '
+for j in $(seq 20); do
+    if [ "$j" -gt "$bars" ]; then
+        printf ' '
+    else
+        printf '='
+    fi
 done
 printf "$normal$bold]"
 printf "$blue Total score: $color$percent%% ($success/$total)$normal\n"

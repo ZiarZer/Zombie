@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
     {
         debug_level = 1;
     }
+    else if (argc > 3 && argv[3][0] == '-' && argv[3][1] == 'D')
+    {
+        debug_level = 4;
+    }
 
     struct bracket_pair *brackets = get_bracket_pairs(program, argv[1]);
     if (!brackets)
