@@ -1,7 +1,7 @@
 #include "utils.h"
 
 void free_all(char **program, struct bracket_pair *brackets,
-                    unsigned char *array)
+                    unsigned char *array, struct location **breakpoints)
 {
     if (brackets)
         free(brackets);
@@ -12,6 +12,16 @@ void free_all(char **program, struct bracket_pair *brackets,
 
     if (array)
         free(array);
+
+    if (breakpoints)
+    {
+        size_t i = 0;
+        while (breakpoints[i])
+        {
+            free(breakpoints[i++]);
+        }
+        free(breakpoints);
+    }
 }
 
 int check_array_size(char *array_size_string)
@@ -94,4 +104,12 @@ char **getlines(char *filename)
 
     fclose(file);
     return program;
+}
+
+struct location *make_location(size_t i, size_t j)
+{
+    struct location *new_location = malloc(sizeof(struct location));
+    new_location->i = i;
+    new_location->j = j;
+    return new_location;
 }

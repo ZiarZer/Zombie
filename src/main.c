@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     struct bracket_pair *brackets = get_bracket_pairs(program, argv[1]);
     if (!brackets) {
-        free_all(program, brackets, NULL);
+        free_all(program, brackets, NULL, NULL);
         return 2;
     }
 

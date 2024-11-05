@@ -1,4 +1,4 @@
-SRC=src/bracket_pair.c src/execution.c src/error.c src/main.c src/utils.c
+SRC=src/*.c
 CC=gcc
 CFLAGS=-Wall -Werror -Wextra -std=c99 -pedantic
 LDFLAGS=-g -fsanitize=address

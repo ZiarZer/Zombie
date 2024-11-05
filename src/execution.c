@@ -1,6 +1,6 @@
 #include "execution.h"
 
-void putescchar(FILE* stream, char c)
+void putescchar(FILE *stream, char c)
 {
     switch (c)
     {
@@ -24,17 +24,19 @@ void putescchar(FILE* stream, char c)
     }
 }
 
-void log_operation(unsigned char*array, ssize_t array_pos, ssize_t i, ssize_t j, char *operation_name)
+void log_operation(unsigned char *array, ssize_t array_pos, ssize_t i,
+                   ssize_t j, char *operation_name)
 {
-        fprintf(stderr, "\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] %s "
-               "(\033[34m%3d\033[0m) ",
-               i + 1, j + 1, array_pos, operation_name, array[array_pos]);
-        putescchar(stderr, array[array_pos]);
-        fprintf(stderr, "\033[0m\n");
+    fprintf(stderr,
+            "\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] %s "
+            "(\033[34m%3d\033[0m) ",
+            i + 1, j + 1, array_pos, operation_name, array[array_pos]);
+    putescchar(stderr, array[array_pos]);
+    fprintf(stderr, "\033[0m\n");
 }
 
 int move_pointer(unsigned char *array, ssize_t *array_pos, ssize_t i, ssize_t j,
-                int debug_level, int is_to_the_right)
+                 int debug_level, int is_to_the_right)
 {
     if (is_to_the_right)
         *array_pos += 1;
@@ -43,14 +45,15 @@ int move_pointer(unsigned char *array, ssize_t *array_pos, ssize_t i, ssize_t j,
 
     if (debug_level >= 3)
     {
-        log_operation(array, *array_pos, i, j, is_to_the_right ? "MOVE->" : "MOVE<-");
+        log_operation(array, *array_pos, i, j,
+                      is_to_the_right ? "MOVE->" : "MOVE<-");
     }
 
     return 0;
 }
 
-int modify_pointed_value(unsigned char *array, ssize_t *array_pos, ssize_t i, ssize_t j,
-                int debug_level, int is_increment)
+int modify_pointed_value(unsigned char *array, ssize_t *array_pos, ssize_t i,
+                         ssize_t j, int debug_level, int is_increment)
 {
     if (is_increment)
     {
@@ -67,21 +70,26 @@ int modify_pointed_value(unsigned char *array, ssize_t *array_pos, ssize_t i, ss
 
     if (debug_level >= 3)
     {
-        log_operation(array, *array_pos, i, j, is_increment?"   ADD" : "   SUB");
+        log_operation(array, *array_pos, i, j,
+                      is_increment ? "   ADD" : "   SUB");
     }
     return 0;
 }
 
 void brackets_jump(char **program, struct char_coords *coordinates,
-                   struct bracket_pair *brackets,
-                   unsigned char* array, ssize_t array_pos, int debug_level)
+                   struct bracket_pair *brackets, unsigned char *array,
+                   ssize_t array_pos, int debug_level)
 {
     ssize_t *i = &(coordinates->i);
     ssize_t *j = &(coordinates->j);
     unsigned char current_pointed_value = array[array_pos];
-    if (debug_level>=4)
+    if (debug_level >= 4)
     {
-        log_operation(array, array_pos, *i, *j, program[*i][*j] == '[' ? " LOOP[":" LOOP]"); // doesn't display [ after ] sent cursor on it
+        log_operation(
+            array, array_pos, *i, *j,
+            program[*i][*j] == '['
+                ? " LOOP["
+                : " LOOP]"); // doesn't display [ after ] sent cursor on it
     }
 
     if (program[*i][*j] == '[' && !current_pointed_value)
@@ -128,10 +136,12 @@ int exec_command(char **program, struct char_coords *coordinates,
     ssize_t *j = &(coordinates->j);
 
     if (program[*i][*j] == '<' || program[*i][*j] == '>')
-        return move_pointer(array, array_pos, *i, *j, log_level, program[*i][*j] == '>');
+        return move_pointer(array, array_pos, *i, *j, log_level,
+                            program[*i][*j] == '>');
 
     else if (program[*i][*j] == '+' || program[*i][*j] == '-')
-        return modify_pointed_value(array, array_pos, *i, *j, log_level, program[*i][*j] == '+');
+        return modify_pointed_value(array, array_pos, *i, *j, log_level,
+                                    program[*i][*j] == '+');
 
     else if (program[*i][*j] == '.')
     {
@@ -158,24 +168,42 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
     ssize_t array_pos = 0;
     int command_result = 0;
 
+    enum debug_run_state run_state = log_level ? PAUSED : RUNNING;
+    struct location **breakpoints = log_level ? calloc(1, sizeof(struct location*)) : NULL;
+
+    if (log_level)
+    {
+        fprintf(stderr, "== DEBUG MODE ==\n");
+    }
+
     while (program[coordinates.i])
     {
+        if (run_state == PAUSED)
+        {
+            run_state = read_debug_command(&breakpoints);
+        }
+        if (run_state == TERMINATED)
+        {
+            break;
+        }
+
         command_result =
             exec_command(program, &coordinates, array, &array_pos, log_level);
 
         if (command_result == -1)
-            brackets_jump(program, &coordinates, brackets, array, array_pos, log_level);
+            brackets_jump(program, &coordinates, brackets, array, array_pos,
+                          log_level);
         else if (command_result != 0)
         {
             print_runtime_error(program, filename, coordinates, command_result);
-            free_all(program, brackets, array);
+            free_all(program, brackets, array, breakpoints);
             return 3;
         }
         else if (array_pos >= array_size || array_pos < 0)
         {
             print_runtime_error(program, filename, coordinates,
                                 array_pos < 0 ? 2 : 1);
-            free_all(program, brackets, array);
+            free_all(program, brackets, array, breakpoints);
             return 3;
         }
 
@@ -185,7 +213,7 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
             coordinates.j = 0;
         }
     }
-    
-    free_all(program, brackets, array);
+
+    free_all(program, brackets, array, breakpoints);
     return command_result;
 }
