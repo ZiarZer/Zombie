@@ -113,3 +113,120 @@ struct location *make_location(size_t i, size_t j)
     new_location->j = j;
     return new_location;
 }
+
+void putescchar(unsigned char c)
+{
+    if (c > 127)
+    {
+        fprintf(stderr, "0x%x", c);
+        return;
+    }
+
+    switch (c)
+    {
+    case '\0':
+        fputs("NUL (\\0)", stderr);
+        break;
+    case '\1':
+        fputs("SOH", stderr);
+        break;
+    case '\2':
+        fputs("STX", stderr);
+        break;
+    case '\3':
+        fputs("ETX", stderr);
+        break;
+    case '\4':
+        fputs("EOT", stderr);
+        break;
+    case '\5':
+        fputs("ENQ", stderr);
+        break;
+    case '\6':
+        fputs("ACK", stderr);
+        break;
+    case '\a':
+        fputs("BEL (\\a)", stderr);
+        break;
+    case '\b':
+        fputs("BS (\\b)", stderr);
+        break;
+    case '\t':
+        fputs("HT (\\t)", stderr);
+        break;
+    case '\n':
+        fputs("LF (\\n)", stderr);
+        break;
+    case '\v':
+        fputs("VT (\\v)", stderr);
+        break;
+    case '\f':
+        fputs("FF (\\f)", stderr);
+        break;
+    case '\r':
+        fputs("CR (\\r)", stderr);
+        break;
+    case '\16':
+        fputs("SO", stderr);
+        break;
+    case '\17':
+        fputs("SI", stderr);
+        break;
+    case '\020':
+        fputs("DLE", stderr);
+        break;
+    case '\021':
+        fputs("DC1", stderr);
+        break;
+    case '\022':
+        fputs("DC2", stderr);
+        break;
+    case '\023':
+        fputs("DC3", stderr);
+        break;
+    case '\024':
+        fputs("DC4", stderr);
+        break;
+    case '\025':
+        fputs("NAK", stderr);
+        break;
+    case '\026':
+        fputs("SYN", stderr);
+        break;
+    case '\027':
+        fputs("ETB", stderr);
+        break;
+    case '\030':
+        fputs("CAN", stderr);
+        break;
+    case '\031':
+        fputs("EM", stderr);
+        break;
+    case '\032':
+        fputs("SUB", stderr);
+        break;
+    case '\033':
+        fputs("ESC", stderr);
+        break;
+    case '\034':
+        fputs("FS", stderr);
+        break;
+    case '\035':
+        fputs("GS", stderr);
+        break;
+    case '\036':
+        fputs("RS", stderr);
+        break;
+    case '\037':
+        fputs("US", stderr);
+        break;
+    case ' ':
+        fputs("SPACE", stderr);
+        break;
+    case 127:
+        fputs("DEL", stderr);
+        break;
+    default:
+        fputc(c, stderr);
+    }
+}
