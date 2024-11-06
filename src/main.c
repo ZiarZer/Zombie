@@ -20,14 +20,10 @@ int main(int argc, char *argv[])
     if (!array_size)
         return 1;
 
-    int debug_level = 0;
-    if (argc > 3 && argv[3][0] == '-' && argv[3][1] == 'd')
+    int debug_mode = 0;
+    if (argc > 3 && argv[3][0] == '-' && (argv[3][1] == 'd' || argv[3][1] == 'D'))
     {
-        debug_level = 1;
-    }
-    else if (argc > 3 && argv[3][0] == '-' && argv[3][1] == 'D')
-    {
-        debug_level = 4;
+        debug_mode = 1;
     }
 
     struct bracket_pair *brackets = get_bracket_pairs(program, argv[1]);
@@ -36,5 +32,5 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    return run_program(program, argv[1], brackets, array_size, debug_level);
+    return run_program(program, argv[1], brackets, array_size, debug_mode);
 }

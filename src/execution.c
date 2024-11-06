@@ -36,14 +36,14 @@ void log_operation(unsigned char *array, ssize_t array_pos, ssize_t i,
 }
 
 int move_pointer(unsigned char *array, ssize_t *array_pos, ssize_t i, ssize_t j,
-                 int debug_level, int is_to_the_right)
+                 int debug_mode, int is_to_the_right)
 {
     if (is_to_the_right)
         *array_pos += 1;
     else
         *array_pos -= 1;
 
-    if (debug_level >= 3)
+    if (debug_mode)
     {
         log_operation(array, *array_pos, i, j,
                       is_to_the_right ? "MOVE->" : "MOVE<-");
@@ -53,7 +53,7 @@ int move_pointer(unsigned char *array, ssize_t *array_pos, ssize_t i, ssize_t j,
 }
 
 int modify_pointed_value(unsigned char *array, ssize_t *array_pos, ssize_t i,
-                         ssize_t j, int debug_level, int is_increment)
+                         ssize_t j, int debug_mode, int is_increment)
 {
     if (is_increment)
     {
@@ -68,7 +68,7 @@ int modify_pointed_value(unsigned char *array, ssize_t *array_pos, ssize_t i,
         array[*array_pos] -= 1;
     }
 
-    if (debug_level >= 3)
+    if (debug_mode)
     {
         log_operation(array, *array_pos, i, j,
                       is_increment ? "   ADD" : "   SUB");
@@ -78,12 +78,12 @@ int modify_pointed_value(unsigned char *array, ssize_t *array_pos, ssize_t i,
 
 void brackets_jump(char **program, struct char_coords *coordinates,
                    struct bracket_pair *brackets, unsigned char *array,
-                   ssize_t array_pos, int debug_level)
+                   ssize_t array_pos, int debug_mode)
 {
     ssize_t *i = &(coordinates->i);
     ssize_t *j = &(coordinates->j);
     unsigned char current_pointed_value = array[array_pos];
-    if (debug_level >= 4)
+    if (debug_mode)
     {
         log_operation(
             array, array_pos, *i, *j,
@@ -110,47 +110,47 @@ void brackets_jump(char **program, struct char_coords *coordinates,
 }
 
 void outputchar(unsigned char *array, ssize_t array_pos, ssize_t i, ssize_t j,
-                int debug_level)
+                int debug_mode)
 {
     putchar(array[array_pos]);
-    if (debug_level)
+    if (debug_mode)
     {
         log_operation(array, array_pos, i, j, "STDOUT");
     }
 }
 void getinputchar(unsigned char *array, ssize_t array_pos, ssize_t i, ssize_t j,
-                  int debug_level)
+                  int debug_mode)
 {
     char c = getchar();
     array[array_pos] = c == EOF ? '\0' : c;
-    if (debug_level >= 2)
+    if (debug_mode)
     {
         log_operation(array, array_pos, i, j, " STDIN");
     }
 }
 
 int exec_command(char **program, struct char_coords *coordinates,
-                 unsigned char *array, ssize_t *array_pos, int log_level)
+                 unsigned char *array, ssize_t *array_pos, int debug_mode)
 {
     ssize_t *i = &(coordinates->i);
     ssize_t *j = &(coordinates->j);
 
     if (program[*i][*j] == '<' || program[*i][*j] == '>')
-        return move_pointer(array, array_pos, *i, *j, log_level,
+        return move_pointer(array, array_pos, *i, *j, debug_mode,
                             program[*i][*j] == '>');
 
     else if (program[*i][*j] == '+' || program[*i][*j] == '-')
-        return modify_pointed_value(array, array_pos, *i, *j, log_level,
+        return modify_pointed_value(array, array_pos, *i, *j, debug_mode,
                                     program[*i][*j] == '+');
 
     else if (program[*i][*j] == '.')
     {
-        outputchar(array, *array_pos, *i, *j, log_level);
+        outputchar(array, *array_pos, *i, *j, debug_mode);
     }
 
     else if (program[*i][*j] == ',')
     {
-        getinputchar(array, *array_pos, *i, *j, log_level);
+        getinputchar(array, *array_pos, *i, *j, debug_mode);
     }
 
     else if (program[*i][*j] == '[' || program[*i][*j] == ']')
@@ -160,7 +160,7 @@ int exec_command(char **program, struct char_coords *coordinates,
 }
 
 int run_program(char **program, char *filename, struct bracket_pair *brackets,
-                ssize_t array_size, int log_level)
+                ssize_t array_size, int debug_mode)
 {
     unsigned char *array = calloc(array_size, sizeof(char));
 
@@ -169,9 +169,9 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
     int command_result = 0;
 
     enum debug_run_state run_state = RUNNING;
-    struct location **breakpoints = log_level ? calloc(1, sizeof(struct location*)) : NULL;
+    struct location **breakpoints = debug_mode ? calloc(1, sizeof(struct location*)) : NULL;
 
-    if (log_level)
+    if (debug_mode)
     {
         run_state = PAUSED;
         print_debug_mode_intro();
@@ -189,11 +189,11 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
         }
 
         command_result =
-            exec_command(program, &coordinates, array, &array_pos, log_level);
+            exec_command(program, &coordinates, array, &array_pos, debug_mode);
 
         if (command_result == -1)
             brackets_jump(program, &coordinates, brackets, array, array_pos,
-                          log_level);
+                          debug_mode);
         else if (command_result != 0)
         {
             print_runtime_error(program, filename, coordinates, command_result);
