@@ -24,15 +24,51 @@ void putescchar(FILE *stream, char c)
     }
 }
 
-void log_operation(unsigned char *array, ssize_t array_pos, ssize_t i,
-                   ssize_t j, char *operation_name)
+char *get_instruction_debug_name(char instruction)
 {
+    switch (instruction)
+    {
+    case '+':
+        return "ADD";
+    case '-':
+        return "SUB";
+    case '<':
+        return "MOVE<-";
+    case '>':
+        return "MOVE->";
+    case '.':
+        return "STDOUT";
+    case ',':
+        return "STDIN";
+    case '[':
+        return "LOOP[";
+    case ']':
+        return "LOOP]";
+    default:
+        return NULL;
+    }
+}
+
+void log_operation(unsigned char *array, ssize_t array_pos, ssize_t i,
+                   ssize_t j, char operation)
+{
+    char *operation_name = get_instruction_debug_name(operation);
     if (!operation_name)
         return;
-    fprintf(stderr,
-            "\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] %*s "
-            "(\033[34m%3d\033[0m) ",
-            i + 1, j + 1, array_pos, 6, operation_name, array[array_pos]);
+    if (operation == '.')
+    {
+        fprintf(stderr,
+                "\033[47;1m%4ld:%-4ld [at \033[43m%3ld\033[47m] %*s "
+                "(\033[44m%3d\033[47m) ",
+                i + 1, j + 1, array_pos, 6, operation_name, array[array_pos]);
+    }
+    else
+    {
+        fprintf(stderr,
+                "\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] %*s "
+                "(\033[34m%3d\033[0m) ",
+                i + 1, j + 1, array_pos, 6, operation_name, array[array_pos]);
+    }
     putescchar(stderr, array[array_pos]);
     fprintf(stderr, "\033[0m\n");
 }
@@ -119,31 +155,6 @@ int exec_command(char **program, struct char_coords *coordinates,
     return 0;
 }
 
-char *get_instruction_debug_name(char instruction)
-{
-    switch (instruction)
-    {
-    case '+':
-        return "ADD";
-    case '-':
-        return "SUB";
-    case '<':
-        return "MOVE<-";
-    case '>':
-        return "MOVE->";
-    case '.':
-        return "STDOUT";
-    case ',':
-        return "STDIN";
-    case '[':
-        return "LOOP[";
-    case ']':
-        return "LOOP]";
-    default:
-        return NULL;
-    }
-}
-
 int run_program(char **program, char *filename, struct bracket_pair *brackets,
                 ssize_t array_size, int debug_mode)
 {
@@ -176,8 +187,7 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
         if (debug_mode)
         {
             log_operation(array, array_pos, coordinates.i, coordinates.j,
-                          get_instruction_debug_name(
-                              program[coordinates.i][coordinates.j]));
+                          program[coordinates.i][coordinates.j]);
         }
 
         command_result = exec_command(program, &coordinates, array, &array_pos);
