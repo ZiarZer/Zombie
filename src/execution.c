@@ -168,12 +168,13 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
     ssize_t array_pos = 0;
     int command_result = 0;
 
-    enum debug_run_state run_state = log_level ? PAUSED : RUNNING;
+    enum debug_run_state run_state = RUNNING;
     struct location **breakpoints = log_level ? calloc(1, sizeof(struct location*)) : NULL;
 
     if (log_level)
     {
-        fprintf(stderr, "== DEBUG MODE ==\n");
+        run_state = PAUSED;
+        print_debug_mode_intro();
     }
 
     while (program[coordinates.i])
