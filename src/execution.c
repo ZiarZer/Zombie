@@ -80,6 +80,13 @@ int exec_command(char **program, struct location *location,
     return 0;
 }
 
+static inline int is_valid_operation(char operation)
+{
+    return operation == '+' || operation == '-' || operation == '<'
+        || operation == '>' || operation == '.' || operation == ','
+        || operation == '[' || operation == ']';
+}
+
 int run_program(char **program, char *filename, struct bracket_pair *brackets,
                 ssize_t array_size, int debug_mode)
 {
@@ -101,18 +108,13 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
 
     while (program[location.i])
     {
-        if (run_state == PAUSED)
-        {
+        if (run_state == PAUSED
+            && is_valid_operation(program[location.i][location.j]))
             run_state = read_debug_command(&breakpoints);
-        }
         if (run_state == TERMINATED)
-        {
             break;
-        }
         if (debug_mode)
-        {
             log_operation(program, array, array_pos, location);
-        }
 
         command_result = exec_command(program, &location, array, &array_pos);
 
