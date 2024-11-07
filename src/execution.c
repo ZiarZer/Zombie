@@ -111,8 +111,7 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
         }
         if (debug_mode)
         {
-            log_operation(array, array_pos, location.i, location.j,
-                          program[location.i][location.j]);
+            log_operation(program, array, array_pos, location);
         }
 
         command_result = exec_command(program, &location, array, &array_pos);

@@ -26,24 +26,6 @@ struct location find_matching_bracket(char **program, struct location location,
     return make_location(location.filename, -1, -1);
 }
 
-void missing_bracket_error_message(char *line, struct location location)
-{
-    int missing_is_left = line[location.j] == ']';
-
-    fprintf(stderr, "\033[1m%s:%ld:%ld: \033[31msyntax error: \033[0m",
-            location.filename, location.i + 1, location.j + 1);
-
-    if (missing_is_left)
-        fprintf(stderr,
-                "expected ‘\033[1m[\033[0m’ before ‘\033[1m]\033[0m’ token\n");
-    else
-        fprintf(stderr,
-                "‘\033[1m[\033[0m’ with no matching ‘\033[1m]\033[0m’ token, "
-                "\033[0mexpected ‘\033[1m]\033[0m’ before end of file\n");
-
-    print_error(line, location);
-}
-
 void append_bracket_pair(struct location **lefts, struct bracket_pair **pairs,
                          size_t *counts[], struct location new_right_bracket)
 {

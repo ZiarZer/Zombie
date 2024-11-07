@@ -128,9 +128,12 @@ char *get_instruction_debug_name(char instruction)
     }
 }
 
-void log_operation(unsigned char *array, ssize_t array_pos, ssize_t i,
-                   ssize_t j, char operation)
+void log_operation(char **program, unsigned char *array, ssize_t array_pos,
+                   struct location location)
 {
+    ssize_t i = location.i;
+    ssize_t j = location.j;
+    char operation = program[i][j];
     char *operation_name = get_instruction_debug_name(operation);
     if (!operation_name)
         return;
@@ -150,4 +153,5 @@ void log_operation(unsigned char *array, ssize_t array_pos, ssize_t i,
     }
     putescchar(array[array_pos]);
     fprintf(stderr, "\033[0m\n");
+    display_program_location(program[location.i], location, BLUE);
 }
