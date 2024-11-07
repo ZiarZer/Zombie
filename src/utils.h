@@ -9,7 +9,7 @@
 #include "bracket_pair.h"
 
 void free_all(char **program, struct bracket_pair *brackets,
-                    unsigned char *array, struct location **breakpoints);
+              unsigned char *array, struct location **breakpoints);
 
 int check_array_size(char *array_size_string);
 

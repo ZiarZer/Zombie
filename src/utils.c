@@ -1,7 +1,7 @@
 #include "utils.h"
 
 void free_all(char **program, struct bracket_pair *brackets,
-                    unsigned char *array, struct location **breakpoints)
+              unsigned char *array, struct location **breakpoints)
 {
     if (brackets)
         free(brackets);

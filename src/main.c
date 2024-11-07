@@ -21,13 +21,15 @@ int main(int argc, char *argv[])
         return 1;
 
     int debug_mode = 0;
-    if (argc > 3 && argv[3][0] == '-' && (argv[3][1] == 'd' || argv[3][1] == 'D'))
+    if (argc > 3 && argv[3][0] == '-'
+        && (argv[3][1] == 'd' || argv[3][1] == 'D'))
     {
         debug_mode = 1;
     }
 
     struct bracket_pair *brackets = get_bracket_pairs(program, argv[1]);
-    if (!brackets) {
+    if (!brackets)
+    {
         free_all(program, brackets, NULL, NULL);
         return 2;
     }
