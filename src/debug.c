@@ -86,8 +86,8 @@ enum debug_run_state read_debug_command(struct location ***breakpoints)
             (*breakpoints) =
                 realloc(*breakpoints,
                         sizeof(struct location *) * (breakpoints_count + 2));
-            (*breakpoints)[breakpoints_count++] =
-                make_location(next_breakpoint_i, next_breakpoint_j);
+            *(*breakpoints)[breakpoints_count++] =
+                make_location(NULL, next_breakpoint_i, next_breakpoint_j);
             (*breakpoints)[breakpoints_count] = NULL;
         }
         else if (!strcmp(line, "h") || !strcmp(line, "help"))

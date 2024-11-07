@@ -106,14 +106,6 @@ char **getlines(char *filename)
     return program;
 }
 
-struct location *make_location(size_t i, size_t j)
-{
-    struct location *new_location = malloc(sizeof(struct location));
-    new_location->i = i;
-    new_location->j = j;
-    return new_location;
-}
-
 void putescchar(unsigned char c)
 {
     if (c > 127)

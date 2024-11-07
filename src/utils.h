@@ -15,8 +15,6 @@ int check_array_size(char *array_size_string);
 
 char **getlines(char *filename);
 
-struct location *make_location(size_t i, size_t j);
-
 void putescchar(unsigned char c);
 
 #endif /* UTILS_H */

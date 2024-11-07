@@ -1,11 +1,5 @@
 #include "error.h"
 
-void print_location(struct location loc, FILE *stream)
-{
-    fprintf(stream, "\033[1m%s:%ld:%ld: \033[0m", loc.filename, loc.i + 1,
-            loc.j + 1);
-}
-
 char *color_text(char *text, size_t from, size_t to, char *color_code)
 {
     char *colored_text =
@@ -54,8 +48,7 @@ char *point_error_text(size_t from, size_t to, char *color_code)
     return point_error_text;
 }
 
-void print_runtime_error(char **program, char *filename,
-                         struct char_coords coordinates, int error_code)
+void print_runtime_error(char **program, struct location loc, int error_code)
 {
     char *error_messages[] = {
         "Pointer out of bounds (upper bound)\n",
@@ -65,20 +58,19 @@ void print_runtime_error(char **program, char *filename,
         "Invalid value (cannot decrement value already at 0)\n"
     };
 
-    struct location loc = { filename, coordinates.i, coordinates.j };
     print_location(loc, stderr);
 
     fputs("\033[31;1mruntime error: \033[0m", stderr);
     fputs(error_messages[error_code - 1], stderr);
 
-    print_error(program[loc.i], loc.i, loc.j);
+    print_error(program[loc.i], loc);
 }
 
-void print_error(char *line, size_t i, size_t j)
+void print_error(char *line, struct location location)
 {
-    char *colored_code = color_text(line, j, j, "\033[31;1m");
-    char *point_error = point_error_text(j, j, "\033[31;1m");
-    fprintf(stderr, " %4ld | %s", i + 1, colored_code);
+    char *colored_code = color_text(line, location.j, location.j, "\033[31;1m");
+    char *point_error = point_error_text(location.j, location.j, "\033[31;1m");
+    fprintf(stderr, " %4ld | %s", location.i + 1, colored_code);
     fprintf(stderr, "      | %s", point_error);
     free(colored_code);
     free(point_error);
