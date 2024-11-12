@@ -15,8 +15,7 @@ echo 'Hello world!' | zombie take_input.bf
 ```
 
 ### Debug mode
-You can get more explicit information on printed chars by enabling debug mode:
+Debug mode can be enabled with the `-d`/`-D` flag:
 ```bash
 zombie file.bf 100 -d
 ```
-A more complete debugger will eventually be implemented.
