@@ -10,141 +10,136 @@ int move_pointer(ssize_t *array_pos, int is_to_the_right)
     return 0;
 }
 
-int modify_pointed_value(unsigned char *pointed_cell, int is_increment)
+int modify_pointed_value(unsigned char *array, ssize_t *array_pos,
+                         int is_increment)
 {
     if (is_increment)
     {
-        if (*pointed_cell == 255)
+        if (array[*array_pos] == 255)
             return 3;
-        *pointed_cell += 1;
+        array[*array_pos] += 1;
     }
     if (!is_increment)
     {
-        if (*pointed_cell == 0)
+        if (array[*array_pos] == 0)
             return 4;
-        *pointed_cell -= 1;
+        array[*array_pos] -= 1;
     }
     return 0;
 }
 
-void brackets_jump(char **program, struct char_coords *coordinates,
-                   struct bracket_pair *brackets,
-                   unsigned char current_pointed_value)
+void brackets_jump(char **program, struct location *location,
+                   struct bracket_pair *brackets, unsigned char *array,
+                   ssize_t array_pos)
 {
-    ssize_t *i = &(coordinates->i);
-    ssize_t *j = &(coordinates->j);
+    unsigned char current_pointed_value = array[array_pos];
 
-    if (program[*i][*j] == '[' && !current_pointed_value)
+    if (program[location->i][location->j] == '[' && !current_pointed_value)
     {
-        struct char_coords right =
-            find_matching_bracket(program, *i, *j, brackets);
-        *i = right.i;
-        *j = right.j;
+        struct location right =
+            find_matching_bracket(program, *location, brackets);
+        location->i = right.i;
+        location->j = right.j;
     }
 
-    else if (program[*i][*j] == ']' && current_pointed_value)
+    else if (program[location->i][location->j] == ']' && current_pointed_value)
     {
-        struct char_coords left =
-            find_matching_bracket(program, *i, *j, brackets);
-        *i = left.i;
-        *j = left.j;
+        struct location left =
+            find_matching_bracket(program, *location, brackets);
+        location->i = left.i;
+        location->j = left.j;
     }
 }
 
-void putescchar(char c) {
-    switch (c) {
-    case '\0':
-        printf("NUL");
-        break;
-    case '\1':
-        printf("SOH");
-        break;
-    case '\n':
-        printf("LF");
-        break;
-    case '\033':
-        printf("ESC");
-        break;
-    case ' ':
-        printf("SPACE");
-        break;
-    default:
-        putchar(c);
-    }
-}
-
-void outputchar(unsigned char *array, ssize_t array_pos, ssize_t i, ssize_t j, int debug_level)
+int exec_command(char **program, struct location *location,
+                 unsigned char *array, ssize_t *array_pos)
 {
-    if (!debug_level)
+    ssize_t i = location->i;
+    ssize_t j = location->j;
+
+    if (program[i][j] == '<' || program[i][j] == '>')
+        return move_pointer(array_pos, program[i][j] == '>');
+
+    else if (program[i][j] == '+' || program[i][j] == '-')
+        return modify_pointed_value(array, array_pos, program[i][j] == '+');
+
+    else if (program[i][j] == '.')
     {
-        putchar(array[array_pos]);
+        putchar(array[*array_pos]);
     }
-    else
+
+    else if (program[i][j] == ',')
     {
-        printf("\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] (\033[34m%3d\033[0m) ", i, j, array_pos, array[array_pos]);
-        putescchar(array[array_pos]);
-        printf("\033[0m\n");
-    }
-}
-
-int exec_command(char **program, struct char_coords *coordinates,
-                 unsigned char *array, ssize_t *array_pos, int log_level)
-{
-    ssize_t *i = &(coordinates->i);
-    ssize_t *j = &(coordinates->j);
-
-    if (program[*i][*j] == '<' || program[*i][*j] == '>')
-        return move_pointer(array_pos, program[*i][*j] == '>');
-
-    else if (program[*i][*j] == '+' || program[*i][*j] == '-')
-        return modify_pointed_value(&array[*array_pos], program[*i][*j] == '+');
-
-    else if (program[*i][*j] == '.') {
-        outputchar(array, *array_pos, *i, *j, log_level);
+        char c = getchar();
+        array[*array_pos] = c == EOF ? '\0' : c;
     }
 
-    else if (program[*i][*j] == ',')
-        array[*array_pos] = getchar();
-
-    else if (program[*i][*j] == '[' || program[*i][*j] == ']')
+    else if (program[i][j] == '[' || program[i][j] == ']')
         return -1;
 
     return 0;
 }
 
+static inline int is_valid_operation(char operation)
+{
+    return operation == '+' || operation == '-' || operation == '<'
+        || operation == '>' || operation == '.' || operation == ','
+        || operation == '[' || operation == ']';
+}
+
 int run_program(char **program, char *filename, struct bracket_pair *brackets,
-                ssize_t array_size, int log_level)
+                ssize_t array_size, int debug_mode)
 {
     unsigned char *array = calloc(array_size, sizeof(char));
 
-    struct char_coords coordinates = { 0, 0 };
+    struct location location = { filename, 0, 0 };
     ssize_t array_pos = 0;
     int command_result = 0;
 
-    while (program[coordinates.i])
+    enum debug_run_state run_state = RUNNING;
+    struct location **breakpoints =
+        debug_mode ? calloc(1, sizeof(struct location *)) : NULL;
+
+    if (debug_mode)
     {
-        command_result = exec_command(program, &coordinates, array, &array_pos, log_level);
+        run_state = PAUSED;
+        print_debug_mode_intro();
+    }
+
+    while (program[location.i])
+    {
+        if (run_state == PAUSED
+            && is_valid_operation(program[location.i][location.j]))
+            run_state = execute_debug_command(array, &breakpoints);
+        if (run_state == TERMINATED)
+            break;
+        if (debug_mode)
+            log_operation(program, array, array_pos, location);
+
+        command_result = exec_command(program, &location, array, &array_pos);
 
         if (command_result == -1)
-            brackets_jump(program, &coordinates, brackets, array[array_pos]);
+            brackets_jump(program, &location, brackets, array, array_pos);
         else if (command_result != 0)
         {
-            print_runtime_error(program, filename, coordinates, command_result);
-            return free_and_return(program, brackets, array, 3);
+            print_runtime_error(program, location, command_result);
+            free_all(program, brackets, array, breakpoints);
+            return 3;
         }
         else if (array_pos >= array_size || array_pos < 0)
         {
-            print_runtime_error(program, filename, coordinates,
-                                array_pos < 0 ? 2 : 1);
-            return free_and_return(program, brackets, array, 3);
+            print_runtime_error(program, location, array_pos < 0 ? 2 : 1);
+            free_all(program, brackets, array, breakpoints);
+            return 3;
         }
 
-        if (!program[coordinates.i][coordinates.j++])
+        if (!program[location.i][location.j++])
         {
-            coordinates.i += 1;
-            coordinates.j = 0;
+            location.i += 1;
+            location.j = 0;
         }
     }
 
-    return free_and_return(program, brackets, array, command_result);
+    free_all(program, brackets, array, breakpoints);
+    return command_result;
 }

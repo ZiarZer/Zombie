@@ -8,11 +8,13 @@
 
 #include "bracket_pair.h"
 
-int free_and_return(char **program, struct bracket_pair *brackets,
-                    unsigned char *array, int return_value);
+void free_all(char **program, struct bracket_pair *brackets,
+              unsigned char *array, struct location **breakpoints);
 
 int check_array_size(char *array_size_string);
 
 char **getlines(char *filename);
+
+void putescchar(unsigned char c);
 
 #endif /* UTILS_H */

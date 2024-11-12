@@ -1,4 +1,4 @@
-SRC=src/bracket_pair.c src/execution.c src/error.c src/main.c src/utils.c
+SRC=src/*.c
 CC=gcc
 CFLAGS=-Wall -Werror -Wextra -std=c99 -pedantic
 LDFLAGS=-g -fsanitize=address
@@ -15,6 +15,9 @@ debug:
 
 check: $(TESTS) $(BIN) tests/check.sh
 	@./tests/check.sh
+
+format:
+	clang-format -i src/*.c src/*.h
 
 clean:
 	$(RM) $(BIN) $(BIN)_debug tests/stderr tests/stdout

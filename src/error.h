@@ -2,28 +2,20 @@
 #define ERROR_H
 
 #define _POSIX_C_SOURCE 200809L
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
-struct location
-{
-    char *filename;
-    size_t i;
-    size_t j;
-};
+#include "location.h"
 
-struct char_coords
-{
-    ssize_t i;
-    ssize_t j;
-};
+#define RED "\033[31;1m"
+#define BLUE "\033[34;1m"
 
-void print_location(struct location loc, FILE *stream);
+void print_runtime_error(char **program, struct location location,
+                         int error_code);
+void display_program_location(char *line, struct location location,
+                              char *color);
 
-void print_runtime_error(char **program, char *filename,
-                         struct char_coords coordinates, int error_code);
-void print_error(char *line, size_t i, size_t j);
+void missing_bracket_error_message(char *line, struct location location);
 
 #endif /* ERROR_H */
