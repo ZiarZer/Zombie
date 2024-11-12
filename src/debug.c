@@ -1,6 +1,6 @@
 #include "debug.h"
 
-#define COMMANDS_COUNT 5
+#define COMMANDS_COUNT 6
 
 char *commands[COMMANDS_COUNT][2] = {
     { "continue",
@@ -9,6 +9,9 @@ char *commands[COMMANDS_COUNT][2] = {
     { "break",
       "Add a breakpoint at specified line and column. Syntax: break "
       "<line>:<column>" },
+    { "print",
+      "Print the content of the cell at specified index content. Syntax: print "
+      "<index>" },
     { "help", "Display help." },
     { "quit", "Stop execution and exit." }
 };
@@ -32,9 +35,26 @@ void print_debugger_incorrect_command(char *command)
     fprintf(stderr, "Undefined command: \"%s\". Try \"help\".\n", command);
 }
 
+void log_cell_content(char c, int highlight)
+{
+    char *color_start = highlight ? "\033[44m" : "\033[34m";
+    char *color_end = highlight ? "\033[47m" : "\033[0m";
+
+    fprintf(stderr, "(%s%3d%s) ", color_start, c, color_end);
+    putescchar(c);
+}
+
+void log_cell_position(size_t array_pos, int highlight)
+{
+    char *color_start = highlight ? "\033[43m" : "\033[33m";
+    char *color_end = highlight ? "\033[47m" : "\033[0;1m";
+    fprintf(stderr, "[at %s%3ld%s]", color_start, array_pos, color_end);
+}
+
 // returns the new debug_run_state (changes with the use of c/continue and
 // n/next)
-enum debug_run_state read_debug_command(struct location ***breakpoints)
+enum debug_run_state execute_debug_command(unsigned char *array,
+                                           struct location ***breakpoints)
 {
     size_t breakpoints_count = 0;
     while ((*breakpoints)[breakpoints_count])
@@ -44,6 +64,7 @@ enum debug_run_state read_debug_command(struct location ***breakpoints)
 
     int next_breakpoint_i;
     int next_breakpoint_j;
+    int printed_cell;
 
     char *line = NULL;
     size_t n;
@@ -89,6 +110,15 @@ enum debug_run_state read_debug_command(struct location ***breakpoints)
             *(*breakpoints)[breakpoints_count++] =
                 make_location(NULL, next_breakpoint_i, next_breakpoint_j);
             (*breakpoints)[breakpoints_count] = NULL;
+        }
+        else if (sscanf(line, "p %d", &printed_cell) == 1
+                 || sscanf(line, "print %d", &printed_cell) == 1)
+        {
+            fputs("\033[1m          ", stderr);
+            log_cell_position(printed_cell, 0);
+            fputs("        ", stderr);
+            log_cell_content(array[printed_cell], 0);
+            fputs("\033[0m\n", stderr);
         }
         else if (!strcmp(line, "h") || !strcmp(line, "help"))
         {
@@ -137,21 +167,14 @@ void log_operation(char **program, unsigned char *array, ssize_t array_pos,
     char *operation_name = get_instruction_debug_name(operation);
     if (!operation_name)
         return;
-    if (operation == '.')
-    {
-        fprintf(stderr,
-                "\033[47;1m%4ld:%-4ld [at \033[43m%3ld\033[47m] %*s "
-                "(\033[44m%3d\033[47m) ",
-                i + 1, j + 1, array_pos, 6, operation_name, array[array_pos]);
-    }
-    else
-    {
-        fprintf(stderr,
-                "\033[1m%4ld:%-4ld [at \033[33m%3ld\033[0;1m] %*s "
-                "(\033[34m%3d\033[0m) ",
-                i + 1, j + 1, array_pos, 6, operation_name, array[array_pos]);
-    }
-    putescchar(array[array_pos]);
-    fprintf(stderr, "\033[0m\n");
+
+    int highlight = operation == '.';
+    fputs(highlight ? "\033[47;1m" : "\033[1m", stderr);
+    fprintf(stderr, "%4ld:%-4ld ", i + 1, j + 1);
+    log_cell_position(array_pos, highlight);
+    fprintf(stderr, " %*s ", 6, operation_name);
+    log_cell_content(array[array_pos], highlight);
+    fputs("\033[0m\n", stderr);
+
     display_program_location(program[location.i], location, BLUE);
 }
