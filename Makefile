@@ -17,7 +17,7 @@ check: $(TESTS) $(BIN) tests/check.sh
 	@./tests/check.sh
 
 format:
-	clang-format -i src/*.c src/*.h
+	clang-format -i ${SRC} src/*/*.h
 
 clean:
 	$(RM) $(BIN) $(BIN)_debug tests/stderr tests/stdout
