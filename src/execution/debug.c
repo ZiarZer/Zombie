@@ -35,7 +35,7 @@ void print_debugger_incorrect_command(char *command)
     fprintf(stderr, "Undefined command: \"%s\". Try \"help\".\n", command);
 }
 
-void log_cell_content(char c, int highlight)
+void log_cell_content(unsigned char c, int highlight)
 {
     char *color_start = highlight ? "\033[44m" : "\033[34m";
     char *color_end = highlight ? "\033[47m" : "\033[0m";
