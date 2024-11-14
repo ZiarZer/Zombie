@@ -2,6 +2,7 @@
 #define LOCATION_H
 
 #include <stdio.h>
+#include <sys/types.h>
 
 struct location
 {
