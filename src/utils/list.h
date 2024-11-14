@@ -6,7 +6,7 @@
 
 struct list
 {
-    int data;
+    ssize_t data;
     struct list *next;
 };
 
