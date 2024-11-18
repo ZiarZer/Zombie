@@ -1,7 +1,7 @@
 #include "utils.h"
 
 void free_all(char **program, struct bracket_pair *brackets,
-              unsigned char *array, struct location **breakpoints)
+              unsigned char *array, map *breakpoints)
 {
     if (brackets)
         free(brackets);
@@ -13,15 +13,7 @@ void free_all(char **program, struct bracket_pair *brackets,
     if (array)
         free(array);
 
-    if (breakpoints)
-    {
-        size_t i = 0;
-        while (breakpoints[i])
-        {
-            free(breakpoints[i++]);
-        }
-        free(breakpoints);
-    }
+    map_destroy(breakpoints);
 }
 
 int check_array_size(char *array_size_string)

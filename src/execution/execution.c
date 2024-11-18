@@ -97,8 +97,7 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
     int command_result = 0;
 
     enum debug_run_state run_state = RUNNING;
-    struct location **breakpoints =
-        debug_mode ? calloc(1, sizeof(struct location *)) : NULL;
+    map *breakpoints = NULL;
 
     if (debug_mode)
     {
@@ -110,11 +109,27 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
     {
         if (run_state == PAUSED
             && is_valid_operation(program[location.i][location.j]))
+        {
+            display_program_location(program[location.i], location, BLUE);
             run_state = execute_debug_command(array, &breakpoints);
+        }
         if (run_state == TERMINATED)
             break;
         if (debug_mode)
+        {
             log_operation(program, array, array_pos, location);
+            if (run_state == RUNNING)
+            {
+                if (find_breakpoint(breakpoints, location.i + 1,
+                                    location.j + 1))
+                {
+                    run_state = PAUSED;
+                    fprintf(stderr,
+                            "Breakpoint at %ld:%ld, pausing execution.\n",
+                            location.i + 1, location.j + 1);
+                }
+            }
+        }
 
         command_result = exec_command(program, &location, array, &array_pos);
 

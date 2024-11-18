@@ -54,14 +54,8 @@ void log_cell_position(size_t array_pos, int highlight)
 // returns the new debug_run_state (changes with the use of c/continue and
 // n/next)
 enum debug_run_state execute_debug_command(unsigned char *array,
-                                           struct location ***breakpoints)
+                                           map **breakpoints)
 {
-    size_t breakpoints_count = 0;
-    while ((*breakpoints)[breakpoints_count])
-    {
-        breakpoints_count++;
-    }
-
     int next_breakpoint_i;
     int next_breakpoint_j;
     int printed_cell;
@@ -104,12 +98,8 @@ enum debug_run_state execute_debug_command(unsigned char *array,
                       &next_breakpoint_j)
                 == 2)
         {
-            (*breakpoints) =
-                realloc(*breakpoints,
-                        sizeof(struct location *) * (breakpoints_count + 2));
-            *(*breakpoints)[breakpoints_count++] =
-                make_location(NULL, next_breakpoint_i, next_breakpoint_j);
-            (*breakpoints)[breakpoints_count] = NULL;
+            *breakpoints = add_breakpoint(*breakpoints, next_breakpoint_i,
+                                          next_breakpoint_j);
         }
         else if (sscanf(line, "p %d", &printed_cell) == 1
                  || sscanf(line, "print %d", &printed_cell) == 1)
@@ -175,6 +165,4 @@ void log_operation(char **program, unsigned char *array, ssize_t array_pos,
     fprintf(stderr, " %*s ", 6, operation_name);
     log_cell_content(array[array_pos], highlight);
     fputs("\033[0m\n", stderr);
-
-    display_program_location(program[location.i], location, BLUE);
 }
