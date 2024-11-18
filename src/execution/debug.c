@@ -165,6 +165,4 @@ void log_operation(char **program, unsigned char *array, ssize_t array_pos,
     fprintf(stderr, " %*s ", 6, operation_name);
     log_cell_content(array[array_pos], highlight);
     fputs("\033[0m\n", stderr);
-
-    display_program_location(program[location.i], location, BLUE);
 }
