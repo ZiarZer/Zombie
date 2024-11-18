@@ -109,7 +109,10 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
     {
         if (run_state == PAUSED
             && is_valid_operation(program[location.i][location.j]))
+        {
+            display_program_location(program[location.i], location, BLUE);
             run_state = execute_debug_command(array, &breakpoints);
+        }
         if (run_state == TERMINATED)
             break;
         if (debug_mode)
