@@ -25,19 +25,11 @@ int check_array_size(char *array_size_string)
             fprintf(stderr,
                     "\033[31;1mError: \033[0mInvalid array size (‘%s’)\n",
                     array_size_string);
-            return 0;
+            return -1;
         }
     }
 
-    ssize_t array_size = atol(array_size_string);
-    if (array_size == 0)
-        fprintf(stderr, "\033[31;1mError: \033[0mArray size cannot be zero\n");
-    else if (array_size < 0)
-        fprintf(stderr,
-                "\033[31;1mError: \033[0mArray size cannot be a negative "
-                "number (%ld)\n",
-                array_size);
-    return array_size;
+    return atol(array_size_string);
 }
 
 FILE *open_file(char *filename)

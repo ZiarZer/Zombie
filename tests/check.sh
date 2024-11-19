@@ -53,7 +53,7 @@ error_test() {
         ./"$bin" tests/"$file".bf 2> tests/stderr 1> tests/stdout
     else
         error_test "$1" "$2"
-        ./"$bin" tests/"$file".bf "$3" 2> tests/stderr 1> tests/stdout
+        ./"$bin" tests/"$file".bf -a "$3" 2> tests/stderr 1> tests/stdout
     fi
 
     if [ "$?" -ne "$1" ]; then
