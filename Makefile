@@ -1,6 +1,6 @@
 SRC=src/main.c src/*/*.c
 CC=gcc
-CFLAGS=-Isrc/execution -Isrc/parse -Isrc/utils -Wall -Werror -Wextra -std=c99 -pedantic
+CFLAGS=-Isrc/cli -Isrc/execution -Isrc/parse -Isrc/utils -Wall -Werror -Wextra -std=c99 -pedantic
 LDFLAGS=-g -fsanitize=address
 TESTS=tests/add.bf tests/comments.bf tests/hello_world.bf tests/mul.bf tests/nine.bf
 BIN=zombie

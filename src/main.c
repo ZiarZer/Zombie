@@ -1,6 +1,7 @@
 #define DEFAULT_ARRAY_SIZE 100
 
 #include "execution.h"
+#include "option_flag.h"
 
 static inline void usage(char *program_name)
 {
@@ -16,34 +17,40 @@ static inline void usage(char *program_name)
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
+    int debug_mode;
+    int help_flag;
+    long size;
+    int offset = init_option_flags(argc, argv, &debug_mode, &size, &help_flag);
+
+    char **program = NULL;
+    char *filename = NULL;
+    if (offset == argc)
+        help_flag = 1;
+
+    if ((offset == argc) || help_flag)
     {
         usage(argv[0]);
         return 1;
     }
+    else
+    {
+        filename = argv[offset];
+        program = getlines(filename);
+    }
 
-    char **program = getlines(argv[1]);
     if (!program)
         return 1;
 
-    ssize_t array_size =
-        argc > 2 ? check_array_size(argv[2]) : DEFAULT_ARRAY_SIZE;
+    unsigned long array_size = size;
     if (!array_size)
-        return 1;
+        array_size = DEFAULT_ARRAY_SIZE; // Tmp
 
-    int debug_mode = 0;
-    if (argc > 3 && argv[3][0] == '-'
-        && (argv[3][1] == 'd' || argv[3][1] == 'D'))
-    {
-        debug_mode = 1;
-    }
-
-    struct bracket_pair *brackets = get_bracket_pairs(program, argv[1]);
+    struct bracket_pair *brackets = get_bracket_pairs(program, filename);
     if (!brackets)
     {
         free_all(program, brackets, NULL, NULL);
         return 2;
     }
 
-    return run_program(program, argv[1], brackets, array_size, debug_mode);
+    return run_program(program, filename, brackets, array_size, debug_mode);
 }
