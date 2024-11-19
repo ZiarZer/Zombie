@@ -7,7 +7,7 @@ If you want, you can copy the `zombie` binary file obtained in your `/bin` direc
 
 ## How to use
 The simplest way of using Zombie is to run `zombie file.bf`, which will interprete the BrainFuck code contained in `file.bf` with an allocated array of 100 bytes by default.\
-If you want to decide of the size of the array, you can add the wanted size to the parameters. For example, if you wanted an array of 10 bytes, you should run `zombie file.bf 10`.
+If you want to decide of the size of the array, you can use the `--arraysize` or `-a` option. For example, if you wanted an array of 10 bytes, you should run `zombie file.bf -a 10`.
 
 When interpreting the `,` command, inputs will be read from the standard input stream, so you can either type them as the program executes, or use a pipe to use another program's output as input:
 ```bash
@@ -15,7 +15,7 @@ echo 'Hello world!' | zombie take_input.bf
 ```
 
 ### Debug mode
-Debug mode can be enabled with the `-d`/`-D` flag:
+Debug mode can be enabled with the `--debug` or `-d` flag:
 ```bash
-zombie file.bf 100 -d
+zombie file.bf -d
 ```
