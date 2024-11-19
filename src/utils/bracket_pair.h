@@ -11,7 +11,7 @@ struct bracket_pair
     ssize_t j_right;
 };
 
-struct location find_matching_bracket(char **program, struct location,
+struct location find_matching_bracket(char instruction, struct location,
                                       struct bracket_pair *pairs);
 
 struct bracket_pair *get_bracket_pairs(char **program, char *filename);

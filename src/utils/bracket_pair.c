@@ -7,10 +7,11 @@ struct bracket_pair new_bracket_pair(size_t i_left, size_t j_left,
     return pair;
 }
 
-struct location find_matching_bracket(char **program, struct location location,
+struct location find_matching_bracket(char instruction,
+                                      struct location location,
                                       struct bracket_pair *pairs)
 {
-    int search_right = program[location.i][location.j] == '[';
+    int search_right = instruction == '[';
     struct bracket_pair pair;
 
     for (size_t idx = 0; pairs[idx].i_left != -1; idx++)

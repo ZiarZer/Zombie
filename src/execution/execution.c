@@ -1,15 +1,5 @@
 #include "execution.h"
 
-int move_pointer(ssize_t *array_pos, int is_to_the_right)
-{
-    if (is_to_the_right)
-        *array_pos += 1;
-    else
-        *array_pos -= 1;
-
-    return 0;
-}
-
 int modify_pointed_value(unsigned char *array, ssize_t *array_pos,
                          int is_increment)
 {
@@ -28,55 +18,50 @@ int modify_pointed_value(unsigned char *array, ssize_t *array_pos,
     return 0;
 }
 
-void brackets_jump(char **program, struct location *location,
-                   struct bracket_pair *brackets, unsigned char *array,
-                   ssize_t array_pos)
+int execute_instruction(char instruction, unsigned char *array,
+                        ssize_t *array_pos, struct location *location,
+                        struct bracket_pair *brackets)
 {
-    unsigned char current_pointed_value = array[array_pos];
-
-    if (program[location->i][location->j] == '[' && !current_pointed_value)
+    char input;
+    switch (instruction)
     {
-        struct location right =
-            find_matching_bracket(program, *location, brackets);
-        location->i = right.i;
-        location->j = right.j;
-    }
-
-    else if (program[location->i][location->j] == ']' && current_pointed_value)
-    {
-        struct location left =
-            find_matching_bracket(program, *location, brackets);
-        location->i = left.i;
-        location->j = left.j;
-    }
-}
-
-int exec_command(char **program, struct location *location,
-                 unsigned char *array, ssize_t *array_pos)
-{
-    ssize_t i = location->i;
-    ssize_t j = location->j;
-
-    if (program[i][j] == '<' || program[i][j] == '>')
-        return move_pointer(array_pos, program[i][j] == '>');
-
-    else if (program[i][j] == '+' || program[i][j] == '-')
-        return modify_pointed_value(array, array_pos, program[i][j] == '+');
-
-    else if (program[i][j] == '.')
-    {
+    case '<':
+        *array_pos -= 1;
+        break;
+    case '>':
+        *array_pos += 1;
+        break;
+    case '+':
+    case '-':
+        return modify_pointed_value(array, array_pos, instruction == '+');
+    case '.':
         putchar(array[*array_pos]);
+        break;
+    case ',':
+        input = getchar();
+        array[*array_pos] = input == EOF ? '\0' : input;
+        break;
+    case '[':
+        if (!array[*array_pos])
+        {
+            struct location right =
+                find_matching_bracket(instruction, *location, brackets);
+            location->i = right.i;
+            location->j = right.j;
+        }
+        break;
+    case ']':
+        if (array[*array_pos])
+        {
+            struct location left =
+                find_matching_bracket(instruction, *location, brackets);
+            location->i = left.i;
+            location->j = left.j;
+        }
+        break;
+    default:
+        break;
     }
-
-    else if (program[i][j] == ',')
-    {
-        char c = getchar();
-        array[*array_pos] = c == EOF ? '\0' : c;
-    }
-
-    else if (program[i][j] == '[' || program[i][j] == ']')
-        return -1;
-
     return 0;
 }
 
@@ -131,11 +116,10 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets,
             }
         }
 
-        command_result = exec_command(program, &location, array, &array_pos);
-
-        if (command_result == -1)
-            brackets_jump(program, &location, brackets, array, array_pos);
-        else if (command_result != 0)
+        command_result =
+            execute_instruction(program[location.i][location.j], array,
+                                &array_pos, &location, brackets);
+        if (command_result != 0)
         {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, breakpoints);
