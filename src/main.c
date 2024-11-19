@@ -2,12 +2,23 @@
 
 #include "execution.h"
 
+static inline void usage(char *program_name)
+{
+    fprintf(stderr, "USAGE: %s [options] file\n", program_name);
+    fputs("OPTIONS:\n", stderr);
+    fputs("  -d, --debug                    ", stderr);
+    fputs("Enable debug mode\n", stderr);
+    fputs("  -a, --arraysize <size>         ", stderr);
+    fputs("Specify a size for the memory array, ", stderr);
+    fputs("default will be 0 which means infinite size.\n", stderr);
+    fputs("  -h, --help                     Display help\n", stderr);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        fprintf(stderr, "\033[1mUsage:\033[0m %s ", argv[0]);
-        fputs("\033[4mFILE\033[0m [\033[4mARRAY SIZE\033[0m]\n", stderr);
+        usage(argv[0]);
         return 1;
     }
 
