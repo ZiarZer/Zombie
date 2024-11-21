@@ -1,0 +1,3 @@
+[1mtests/endless-add.bf:1:3: [0m[31;1mruntime error: [0mInvalid value (cannot increment value already at 255)
+    1 | +[[31;1m+[0m]
+      |   [31;1m^[0m
