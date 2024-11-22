@@ -46,5 +46,6 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
-    return run_program(program, filename, brackets, array_size, debug_mode);
+    return debug_mode ? run_debug_mode(program, filename, brackets, array_size)
+                      : run_program(program, filename, brackets, array_size);
 }

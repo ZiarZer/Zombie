@@ -65,75 +65,79 @@ int execute_instruction(char instruction, unsigned char *array,
     return 0;
 }
 
-static inline int is_valid_operation(char operation)
-{
-    return operation == '+' || operation == '-' || operation == '<'
-        || operation == '>' || operation == '.' || operation == ','
-        || operation == '[' || operation == ']';
+static inline int is_valid_operation(char operation) {
+    return operation == '+' || operation == '-' || operation == '<' || operation == '>' || operation == '.'
+        || operation == ',' || operation == '[' || operation == ']';
 }
 
-int run_program(char **program, char *filename, struct bracket_pair *brackets,
-                ssize_t array_size, int debug_mode)
-{
+int run_program(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size) {
     unsigned char *array = calloc(array_size, sizeof(char));
 
     struct location location = { filename, 0, 0 };
     ssize_t array_pos = 0;
     int command_result = 0;
 
-    enum debug_run_state run_state = RUNNING;
-    map *breakpoints = NULL;
+    while (program[location.i]) {
+        command_result = execute_instruction(program[location.i][location.j], array, &array_pos, &location, brackets);
+        if (command_result != 0) {
+            print_runtime_error(program, location, command_result);
+            free_all(program, brackets, array, NULL);
+            return 3;
+        } else if (array_pos >= array_size || array_pos < 0) {
+            print_runtime_error(program, location, array_pos < 0 ? 2 : 1);
+            free_all(program, brackets, array, NULL);
+            return 3;
+        }
 
-    if (debug_mode)
-    {
-        run_state = PAUSED;
-        print_debug_mode_intro();
+        if (!program[location.i][location.j++]) {
+            location.i += 1;
+            location.j = 0;
+        }
     }
 
-    while (program[location.i])
-    {
-        if (run_state == PAUSED
-            && is_valid_operation(program[location.i][location.j]))
-        {
+    free_all(program, brackets, array, NULL);
+    return command_result;
+}
+
+int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size) {
+    unsigned char *array = calloc(array_size, sizeof(char));
+
+    struct location location = { filename, 0, 0 };
+    ssize_t array_pos = 0;
+    int command_result = 0;
+
+    enum debug_run_state run_state = PAUSED;
+    map *breakpoints = NULL;
+
+    print_debug_mode_intro();
+
+    while (program[location.i]) {
+        if (run_state == PAUSED && is_valid_operation(program[location.i][location.j])) {
             display_program_location(program[location.i], location, BLUE);
             run_state = execute_debug_command(array, &breakpoints);
         }
         if (run_state == TERMINATED)
             break;
-        if (debug_mode)
-        {
-            log_operation(program, array, array_pos, location);
-            if (run_state == RUNNING)
-            {
-                if (find_breakpoint(breakpoints, location.i + 1,
-                                    location.j + 1))
-                {
-                    run_state = PAUSED;
-                    fprintf(stderr,
-                            "Breakpoint at %ld:%ld, pausing execution.\n",
-                            location.i + 1, location.j + 1);
-                }
+        log_operation(program, array, array_pos, location);
+        if (run_state == RUNNING) {
+            if (find_breakpoint(breakpoints, location.i + 1, location.j + 1)) {
+                run_state = PAUSED;
+                fprintf(stderr, "Breakpoint at %ld:%ld, pausing execution.\n", location.i + 1, location.j + 1);
             }
         }
 
-        command_result =
-            execute_instruction(program[location.i][location.j], array,
-                                &array_pos, &location, brackets);
-        if (command_result != 0)
-        {
+        command_result = execute_instruction(program[location.i][location.j], array, &array_pos, &location, brackets);
+        if (command_result != 0) {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, breakpoints);
             return 3;
-        }
-        else if (array_pos >= array_size || array_pos < 0)
-        {
+        } else if (array_pos >= array_size || array_pos < 0) {
             print_runtime_error(program, location, array_pos < 0 ? 2 : 1);
             free_all(program, brackets, array, breakpoints);
             return 3;
         }
 
-        if (!program[location.i][location.j++])
-        {
+        if (!program[location.i][location.j++]) {
             location.i += 1;
             location.j = 0;
         }
