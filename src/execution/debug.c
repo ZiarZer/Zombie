@@ -51,71 +51,71 @@ void log_cell_position(size_t array_pos, int highlight)
     fprintf(stderr, "[at %s%3ld%s]", color_start, array_pos, color_end);
 }
 
+struct debug_command parse_debug_command(char *line) {
+    int param1;
+    int param2;
+    struct debug_command debug_command = { NONE, 0, 0 };
+    if (!strcmp(line, "c") || !strcmp(line, "continue")) {
+        debug_command.type = CONTINUE;
+    } else if (!strcmp(line, "n") || !strcmp(line, "next")) {
+        debug_command.type = NEXT;
+    } else if (!strcmp(line, "h") || !strcmp(line, "help")) {
+        debug_command.type = HELP;
+    } else if (!strcmp(line, "q") || !strcmp(line, "q")) {
+        debug_command.type = QUIT;
+    } else if (sscanf(line, "b %d:%d", &param1, &param2) == 2 || sscanf(line, "break %d:%d", &param1, &param2) == 2) {
+        debug_command.type = BREAK;
+        debug_command.param1 = param1;
+        debug_command.param2 = param2;
+    } else if (sscanf(line, "p %d", &param1) == 1 || sscanf(line, "print %d", &param1) == 1) {
+        debug_command.type = PRINT;
+        debug_command.param1 = param1;
+    }
+    return debug_command;
+}
+
 // returns the new debug_run_state (changes with the use of c/continue and
 // n/next)
-enum debug_run_state execute_debug_command(unsigned char *array,
-                                           map **breakpoints)
-{
-    int next_breakpoint_i;
-    int next_breakpoint_j;
-    int printed_cell;
-
+enum debug_run_state execute_debug_command(unsigned char *array, map **breakpoints) {
     char *line = NULL;
     size_t n;
     ssize_t read_count;
-    while (1)
-    {
+    while (1) {
         fprintf(stderr, "(zombie) ");
         read_count = getline(&line, &n, stdin);
-        if (read_count < 0)
-        {
+        if (read_count < 0) {
             fputc('\n', stderr);
             break;
-        }
-        else
-        {
+        } else {
             line[read_count - 1] = '\0';
         }
-        if (!strcmp(line, "c") || !strcmp(line, "continue"))
-        {
+
+        struct debug_command debug_command = parse_debug_command(line);
+
+        switch (debug_command.type) {
+        case CONTINUE:
             free(line);
             return RUNNING;
-        }
-        if (!strcmp(line, "n") || !strcmp(line, "next") || !strcmp(line, ""))
-        {
+        case NEXT:
             free(line);
             return PAUSED;
-        }
-
-        if (!strcmp(line, "q") || !strcmp(line, "quit"))
-        {
+        case QUIT:
             free(line);
             return TERMINATED;
-        }
-
-        if (sscanf(line, "b %d:%d", &next_breakpoint_i, &next_breakpoint_j) == 2
-            || sscanf(line, "break %d:%d", &next_breakpoint_i,
-                      &next_breakpoint_j)
-                == 2)
-        {
-            *breakpoints = add_breakpoint(*breakpoints, next_breakpoint_i,
-                                          next_breakpoint_j);
-        }
-        else if (sscanf(line, "p %d", &printed_cell) == 1
-                 || sscanf(line, "print %d", &printed_cell) == 1)
-        {
+        case BREAK:
+            *breakpoints = add_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
+            break;
+        case PRINT:
             fputs("\033[1m          ", stderr);
-            log_cell_position(printed_cell, 0);
+            log_cell_position(debug_command.param1, 0);
             fputs("        ", stderr);
-            log_cell_content(array[printed_cell], 0);
+            log_cell_content(array[debug_command.param1], 0);
             fputs("\033[0m\n", stderr);
-        }
-        else if (!strcmp(line, "h") || !strcmp(line, "help"))
-        {
+            break;
+        case HELP:
             print_debugger_help();
-        }
-        else
-        {
+            break;
+        default:
             print_debugger_incorrect_command(line);
         }
     }
