@@ -8,7 +8,7 @@
 
 enum debug_run_state { PAUSED, RUNNING, TERMINATED };
 
-enum debug_command_type { CONTINUE, NEXT, BREAK, PRINT, QUIT, HELP, NONE };
+enum debug_command_type { CONTINUE, NEXT, BREAK, PRINT, QUIT, HELP, LAST, NONE };
 
 struct debug_command {
     enum debug_command_type type;

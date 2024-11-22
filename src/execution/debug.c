@@ -55,14 +55,16 @@ struct debug_command parse_debug_command(char *line) {
     int param1;
     int param2;
     struct debug_command debug_command = { NONE, 0, 0 };
-    if (!strcmp(line, "c") || !strcmp(line, "continue")) {
+    if (!line || !strcmp(line, "q") || !strcmp(line, "q")) {
+        debug_command.type = QUIT;
+    } else if (!strcmp(line, "")) {
+        debug_command.type = LAST;
+    } else if (!strcmp(line, "c") || !strcmp(line, "continue")) {
         debug_command.type = CONTINUE;
     } else if (!strcmp(line, "n") || !strcmp(line, "next")) {
         debug_command.type = NEXT;
     } else if (!strcmp(line, "h") || !strcmp(line, "help")) {
         debug_command.type = HELP;
-    } else if (!strcmp(line, "q") || !strcmp(line, "q")) {
-        debug_command.type = QUIT;
     } else if (sscanf(line, "b %d:%d", &param1, &param2) == 2 || sscanf(line, "break %d:%d", &param1, &param2) == 2) {
         debug_command.type = BREAK;
         debug_command.param1 = param1;
@@ -74,21 +76,25 @@ struct debug_command parse_debug_command(char *line) {
     return debug_command;
 }
 
+char *get_debug_console_user_input(char **lineptr, size_t *nptr) {
+    fprintf(stderr, "(zombie) ");
+    ssize_t read_count = getline(lineptr, nptr, stdin);
+    if (read_count < 0) {
+        fputc('\n', stderr);
+        return NULL;
+    } else {
+        (*lineptr)[read_count - 1] = '\0';
+        return *lineptr;
+    }
+}
+
 // returns the new debug_run_state (changes with the use of c/continue and
 // n/next)
 enum debug_run_state execute_debug_command(unsigned char *array, map **breakpoints) {
     char *line = NULL;
     size_t n;
-    ssize_t read_count;
     while (1) {
-        fprintf(stderr, "(zombie) ");
-        read_count = getline(&line, &n, stdin);
-        if (read_count < 0) {
-            fputc('\n', stderr);
-            break;
-        } else {
-            line[read_count - 1] = '\0';
-        }
+        line = get_debug_console_user_input(&line, &n);
 
         struct debug_command debug_command = parse_debug_command(line);
 
@@ -97,6 +103,7 @@ enum debug_run_state execute_debug_command(unsigned char *array, map **breakpoin
             free(line);
             return RUNNING;
         case NEXT:
+        case LAST:
             free(line);
             return PAUSED;
         case QUIT:
