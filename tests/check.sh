@@ -37,6 +37,11 @@ compare_output_files() {
     fi
 }
 
+# run_test
+# @param $expected_return: expected value returned by zombie
+# @param $file: filename of the test file without the .bf extension
+# @param $input: input passed in stdin during execution 
+# @param $@: zombie options
 run_test() {
     expected_return="$1"; shift
     file="$1"; shift
@@ -78,16 +83,18 @@ run_test 2 missing_right
 run_test 3 endless-add
 run_test 3 incorrect_value_upper
 run_test 3 incorrect_value_lower
-run_test 3 pointer_out_of_bounds ''              -a 100
+run_test 3 pointer_out_of_bounds ''                           -a 100
 run_test 3 multiple_errors
-run_test 3 multiple_errors       ''              -a 4
-run_test 3 repeat-forever        'out of bounds' -a 10
+run_test 3 multiple_errors       ''                           -a 4
+run_test 3 repeat-forever        'out of bounds'              -a 10
 
 run_test 0 hello_world
 run_test 0 trailing-comments
 run_test 0 comments
 run_test 0 nine
 run_test 0 simple-loop
+
+run_test 3 endless-add           "b 1:3\nc\nc\nc\nr 1:3\nc\n" --debug
 
 run_test 0 add                   '!#'
 run_test 0 mul                   "\n\n"
