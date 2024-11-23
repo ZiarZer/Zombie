@@ -124,8 +124,10 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
         return TERMINATED;
     case BREAK:
         *breakpoints = add_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
+        fprintf(stderr, "Breakpoint added at %d:%d\n", debug_command.param1, debug_command.param2);
         return PAUSED;
     case REMOVE:
+        fprintf(stderr, "Removing breakpoint at %d:%d (if it exists)\n", debug_command.param1, debug_command.param2);
         *breakpoints = remove_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
         return PAUSED;
     case PRINT:
