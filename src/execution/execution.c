@@ -116,6 +116,7 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
     char *line = NULL;
     while (program[location.i]) {
         if ((run_state == PAUSED || run_state == STEPPING) && is_valid_operation(program[location.i][location.j])) {
+            fputs("--------------------------\n", stderr);
             display_program_location(program[location.i], location, BLUE);
             line = get_debug_console_user_input(&line, &n);
             enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, &breakpoints);
