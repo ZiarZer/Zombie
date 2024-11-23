@@ -109,6 +109,8 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
                                            struct memory_array *array, map **breakpoints) {
     struct debug_command debug_command = parse_debug_command(line);
     if (debug_command.type == LAST) {
+        if (previous_command->type == NONE)
+            return PAUSED;
         debug_command = *previous_command;
     }
     *previous_command = debug_command;
