@@ -1,28 +1,28 @@
 #include "execution.h"
 
-int modify_pointed_value(struct memory_array *array, int is_increment) {
+enum instruction_result modify_pointed_value(struct memory_array *array, int is_increment) {
     unsigned char current_value = array_get_current(array);
     if (is_increment) {
         if (current_value == 255)
-            return 3;
+            return VALUE_UPPER_ERROR;
         array_set_current(array, current_value + 1);
     }
     if (!is_increment) {
         if (current_value == 0)
-            return 4;
+            return VALUE_LOWER_ERROR;
         array_set_current(array, current_value - 1);
     }
-    return 0;
+    return DONE;
 }
 
-int execute_instruction(char instruction, struct memory_array *array, struct location *location,
-                        struct bracket_pair *brackets) {
+enum instruction_result execute_instruction(char instruction, struct memory_array *array, struct location *location,
+                                            struct bracket_pair *brackets) {
     char input;
     switch (instruction) {
     case '<':
-        return array_move(array, array->cursor - 1);
+        return array_move(array, array->cursor - 1) ? POINTER_LOWER_ERROR : DONE;
     case '>':
-        return array_move(array, array->cursor + 1);
+        return array_move(array, array->cursor + 1) ? POINTER_UPPER_ERROR : DONE;
     case '+':
     case '-':
         return modify_pointed_value(array, instruction == '+');
@@ -38,6 +38,7 @@ int execute_instruction(char instruction, struct memory_array *array, struct loc
             struct location right = find_matching_bracket(instruction, *location, brackets);
             location->i = right.i;
             location->j = right.j;
+            return FOUND_BRACKET;
         }
         break;
     case ']':
@@ -45,12 +46,13 @@ int execute_instruction(char instruction, struct memory_array *array, struct loc
             struct location left = find_matching_bracket(instruction, *location, brackets);
             location->i = left.i;
             location->j = left.j;
+            return FOUND_BRACKET;
         }
         break;
     default:
         break;
     }
-    return 0;
+    return DONE;
 }
 
 static inline int is_valid_operation(char operation) {
@@ -66,12 +68,13 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets, s
 
     while (program[location.i]) {
         command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
-        if (command_result != 0) {
+        if (command_result != FOUND_BRACKET && command_result != DONE) {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, NULL);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
-            print_runtime_error(program, location, array->cursor < array->low_bound ? 2 : 1);
+            print_runtime_error(program, location,
+                                array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
             free_all(program, brackets, array, NULL);
             return 3;
         }
@@ -127,12 +130,15 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
 
         command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
         must_display_program_location = 1;
-        if (command_result != 0) {
+        if (command_result == FOUND_BRACKET) {
+            log_operation(program, array, location);
+        } else if (command_result != DONE) {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, NULL);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
-            print_runtime_error(program, location, array->cursor < array->low_bound ? 2 : 1);
+            print_runtime_error(program, location,
+                                array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
             free_all(program, brackets, array, NULL);
             return 3;
         }

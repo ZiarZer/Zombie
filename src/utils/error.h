@@ -8,13 +8,20 @@
 
 #include "location.h"
 
+enum instruction_result {
+    DONE,
+    FOUND_BRACKET,
+    POINTER_LOWER_ERROR,
+    POINTER_UPPER_ERROR,
+    VALUE_UPPER_ERROR,
+    VALUE_LOWER_ERROR
+};
+
 #define RED "\033[31;1m"
 #define BLUE "\033[34;1m"
 
-void print_runtime_error(char **program, struct location location,
-                         int error_code);
-void display_program_location(char *line, struct location location,
-                              char *color);
+void print_runtime_error(char **program, struct location location, enum instruction_result error_code);
+void display_program_location(char *line, struct location location, char *color);
 
 void missing_bracket_error_message(char *line, struct location location);
 

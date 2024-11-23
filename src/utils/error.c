@@ -48,20 +48,28 @@ char *point_error_text(size_t from, size_t to, char *color_code)
     return point_error_text;
 }
 
-void print_runtime_error(char **program, struct location loc, int error_code)
-{
-    char *error_messages[] = {
-        "Pointer out of bounds (upper bound)\n",
-        "Pointer out of bounds (lower bound)\n",
-        ("Invalid value (cannot increment value "
-         "already at 255)\n"),
-        "Invalid value (cannot decrement value already at 0)\n"
-    };
+static char *get_error_message(enum instruction_result error_code) {
+    switch (error_code) {
+    case POINTER_LOWER_ERROR:
+        return "Pointer out of bounds (lower bound)\n";
+    case POINTER_UPPER_ERROR:
+        return "Pointer out of bounds (upper bound)\n";
+    case VALUE_LOWER_ERROR:
+        return "Invalid value (cannot decrement value already at 0)\n";
+    case VALUE_UPPER_ERROR:
+        return "Invalid value (cannot increment value already at 255)\n";
+    default:
+        return NULL;
+    }
+}
+
+void print_runtime_error(char **program, struct location loc, enum instruction_result error_code) {
+    char *error_message = get_error_message(error_code);
 
     print_location(loc, stderr);
 
     fputs("\033[31;1mruntime error: \033[0m", stderr);
-    fputs(error_messages[error_code - 1], stderr);
+    fputs(error_message, stderr);
 
     display_program_location(program[loc.i], loc, RED);
 }

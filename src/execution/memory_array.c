@@ -35,7 +35,7 @@ void array_set_at(struct memory_array *a, ssize_t index, char c) {
  * \brief Move array cursor and reallocate array if necessary.
  * \param a the memory array.
  * \param new_index the new position of the cursor.
- * \return 0 if success, 1 if the new position is too big and the array's size is fixed.
+ * \return 0 if success, 1 if the new position is too high, 2 if it is too low.
  */
 int array_move(struct memory_array *a, ssize_t new_index) {
     if (new_index < a->low_bound) {
