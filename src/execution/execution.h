@@ -3,6 +3,7 @@
 
 #include "bracket_pair.h"
 #include "debug.h"
+#include "memory_array.h"
 
 int run_program(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size);
 

@@ -80,8 +80,8 @@ run_test 3 incorrect_value_upper
 run_test 3 incorrect_value_lower
 run_test 3 pointer_out_of_bounds
 run_test 3 multiple_errors
-run_test 3 multiple_errors       ''             -a 4
-run_test 3 repeat-forever       'out of bounds'
+run_test 3 multiple_errors       ''              -a 4
+run_test 3 repeat-forever        'out of bounds' -a 10
 
 run_test 0 hello_world
 run_test 0 trailing-comments

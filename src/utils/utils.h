@@ -8,10 +8,9 @@
 
 #include "bracket_pair.h"
 #include "map.h"
+#include "memory_array.h"
 
-size_t size_t_max(size_t a, size_t b);
-
-void free_all(char **program, struct bracket_pair *brackets, unsigned char *array, map *breakpoints);
+void free_all(char **program, struct bracket_pair *brackets, struct memory_array *array, map *breakpoints);
 
 int check_array_size(char *array_size_string);
 

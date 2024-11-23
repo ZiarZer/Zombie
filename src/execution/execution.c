@@ -1,60 +1,48 @@
 #include "execution.h"
 
-int modify_pointed_value(unsigned char *array, ssize_t *array_pos,
-                         int is_increment)
-{
-    if (is_increment)
-    {
-        if (array[*array_pos] == 255)
+int modify_pointed_value(struct memory_array *array, int is_increment) {
+    unsigned char current_value = array_get_current(array);
+    if (is_increment) {
+        if (current_value == 255)
             return 3;
-        array[*array_pos] += 1;
+        array_set_current(array, current_value + 1);
     }
-    if (!is_increment)
-    {
-        if (array[*array_pos] == 0)
+    if (!is_increment) {
+        if (current_value == 0)
             return 4;
-        array[*array_pos] -= 1;
+        array_set_current(array, current_value - 1);
     }
     return 0;
 }
 
-int execute_instruction(char instruction, unsigned char *array,
-                        ssize_t *array_pos, struct location *location,
-                        struct bracket_pair *brackets)
-{
+int execute_instruction(char instruction, struct memory_array *array, struct location *location,
+                        struct bracket_pair *brackets) {
     char input;
-    switch (instruction)
-    {
+    switch (instruction) {
     case '<':
-        *array_pos -= 1;
-        break;
+        return array_move(array, array->cursor - 1);
     case '>':
-        *array_pos += 1;
-        break;
+        return array_move(array, array->cursor + 1);
     case '+':
     case '-':
-        return modify_pointed_value(array, array_pos, instruction == '+');
+        return modify_pointed_value(array, instruction == '+');
     case '.':
-        putchar(array[*array_pos]);
+        putchar(array_get_current(array));
         break;
     case ',':
         input = getchar();
-        array[*array_pos] = input == EOF ? '\0' : input;
+        array_set_current(array, input == EOF ? '\0' : input);
         break;
     case '[':
-        if (!array[*array_pos])
-        {
-            struct location right =
-                find_matching_bracket(instruction, *location, brackets);
+        if (!array_get_current(array)) {
+            struct location right = find_matching_bracket(instruction, *location, brackets);
             location->i = right.i;
             location->j = right.j;
         }
         break;
     case ']':
-        if (array[*array_pos])
-        {
-            struct location left =
-                find_matching_bracket(instruction, *location, brackets);
+        if (array_get_current(array)) {
+            struct location left = find_matching_bracket(instruction, *location, brackets);
             location->i = left.i;
             location->j = left.j;
         }
@@ -71,20 +59,19 @@ static inline int is_valid_operation(char operation) {
 }
 
 int run_program(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size) {
-    unsigned char *array = calloc(array_size, sizeof(char));
+    struct memory_array *array = array_init(array_size);
 
     struct location location = { filename, 0, 0 };
-    ssize_t array_pos = 0;
     int command_result = 0;
 
     while (program[location.i]) {
-        command_result = execute_instruction(program[location.i][location.j], array, &array_pos, &location, brackets);
+        command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
         if (command_result != 0) {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, NULL);
             return 3;
-        } else if (array_pos >= array_size || array_pos < 0) {
-            print_runtime_error(program, location, array_pos < 0 ? 2 : 1);
+        } else if (array->cursor >= array->size || array->cursor < 0) {
+            print_runtime_error(program, location, array->cursor < 0 ? 2 : 1);
             free_all(program, brackets, array, NULL);
             return 3;
         }
@@ -100,10 +87,9 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets, s
 }
 
 int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size) {
-    unsigned char *array = calloc(array_size, sizeof(char));
+    struct memory_array *array = array_init(array_size);
 
     struct location location = { filename, 0, 0 };
-    ssize_t array_pos = 0;
     int command_result = 0;
 
     struct debug_command previous_command = { NONE, 0, 0 };
@@ -123,8 +109,7 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
                 must_display_program_location = 0;
             }
             line = get_debug_console_user_input(&line, &n);
-            enum debug_run_state new_state =
-                execute_debug_command(line, &previous_command, array, &array_pos, &breakpoints);
+            enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, &breakpoints);
             if (new_state == PAUSED) {
                 continue;
             }
@@ -132,7 +117,7 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
         }
         if (run_state == TERMINATED)
             break;
-        log_operation(program, array, array_pos, location);
+        log_operation(program, array, location);
         if (run_state == RUNNING) {
             if (find_breakpoint(breakpoints, location.i + 1, location.j + 1)) {
                 run_state = PAUSED;
@@ -140,14 +125,14 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
             }
         }
 
-        command_result = execute_instruction(program[location.i][location.j], array, &array_pos, &location, brackets);
+        command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
         must_display_program_location = 1;
         if (command_result != 0) {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, breakpoints);
             return 3;
-        } else if (array_pos >= array_size || array_pos < 0) {
-            print_runtime_error(program, location, array_pos < 0 ? 2 : 1);
+        } else if (array->cursor >= array->size || array->cursor < 0) {
+            print_runtime_error(program, location, array->cursor < 0 ? 2 : 1);
             free_all(program, brackets, array, breakpoints);
             return 3;
         }

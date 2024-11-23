@@ -1,10 +1,6 @@
 #include "utils.h"
 
-size_t size_t_max(size_t a, size_t b) {
-    return a > b ? a : b;
-}
-
-void free_all(char **program, struct bracket_pair *brackets, unsigned char *array, map *breakpoints) {
+void free_all(char **program, struct bracket_pair *brackets, struct memory_array *array, map *breakpoints) {
     if (brackets)
         free(brackets);
 
@@ -12,8 +8,7 @@ void free_all(char **program, struct bracket_pair *brackets, unsigned char *arra
         free(program[i]);
     free(program);
 
-    if (array)
-        free(array);
+    destroy_array(array);
 
     map_destroy(breakpoints);
 }

@@ -1,5 +1,3 @@
-#define DEFAULT_ARRAY_SIZE 100
-
 #include "execution.h"
 #include "option_flag.h"
 
@@ -38,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     unsigned long array_size = size;
     if (!array_size)
-        array_size = DEFAULT_ARRAY_SIZE; // Tmp
+        array_size = 0;
 
     struct bracket_pair *brackets = get_bracket_pairs(program, filename);
     if (!brackets) {

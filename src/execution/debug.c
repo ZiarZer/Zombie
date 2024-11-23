@@ -102,12 +102,11 @@ char *get_debug_console_user_input(char **lineptr, size_t *nptr) {
  * \param line the user input, nul-terminated and with no newline.
  * \param previous_command the previously built debug command variable.
  * \param array the memory array.
- * \param array_pos the position of the cursor on the array.
  * \param breakpoints breakpoints map.
  * \return The new debug run state
  */
-enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command, unsigned char *array,
-                                           ssize_t *array_pos, map **breakpoints) {
+enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command,
+                                           struct memory_array *array, map **breakpoints) {
     struct debug_command debug_command = parse_debug_command(line);
     if (debug_command.type == LAST) {
         debug_command = *previous_command;
@@ -131,14 +130,14 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
         fputs("\033[1m          ", stderr);
         log_cell_position(debug_command.param1, 0);
         fputs("        ", stderr);
-        log_cell_content(array[debug_command.param1], 0);
+        log_cell_content(array_get_at(array, debug_command.param1), 0);
         fputs("\033[0m\n", stderr);
         return PAUSED;
     case ALTER:
-        array[debug_command.param1] = debug_command.param2;
+        array_set_at(array, debug_command.param1, debug_command.param2);
         return PAUSED;
     case MOVE:
-        *array_pos = debug_command.param1;
+        array_move(array, debug_command.param1);
         return PAUSED;
     case HELP:
         print_debugger_help();
@@ -174,9 +173,7 @@ char *get_instruction_debug_name(char instruction)
     }
 }
 
-void log_operation(char **program, unsigned char *array, ssize_t array_pos,
-                   struct location location)
-{
+void log_operation(char **program, struct memory_array *array, struct location location) {
     ssize_t i = location.i;
     ssize_t j = location.j;
     char operation = program[i][j];
@@ -187,8 +184,8 @@ void log_operation(char **program, unsigned char *array, ssize_t array_pos,
     int highlight = operation == '.';
     fputs(highlight ? "\033[47;1m" : "\033[1m", stderr);
     fprintf(stderr, "%4ld:%-4ld ", i + 1, j + 1);
-    log_cell_position(array_pos, highlight);
+    log_cell_position(array->cursor, highlight);
     fprintf(stderr, " %*s ", 6, operation_name);
-    log_cell_content(array[array_pos], highlight);
+    log_cell_content(array_get_current(array), highlight);
     fputs("\033[0m\n", stderr);
 }
