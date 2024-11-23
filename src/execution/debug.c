@@ -1,12 +1,13 @@
 #include "debug.h"
 
-#define COMMANDS_COUNT 7
+#define COMMANDS_COUNT 8
 
 char *commands[COMMANDS_COUNT][2] = {
     { "continue", "Continue running the program (at the start, or at a breakpoint)." },
     { "next", "Execute next program instruction." },
     { "break", "Add a breakpoint at specified line and column. Syntax: break <line>:<column>" },
     { "print", "Print the content of the cell at specified index content. Syntax: print <index>" },
+    { "alter", "Change a cell's value. Syntax: alter <index> <int>" },
     { "move", "Move the cursor at specified index. Syntax: move <index>" },
     { "help", "Display help." },
     { "quit", "Stop execution and exit." }
@@ -68,6 +69,10 @@ struct debug_command parse_debug_command(char *line) {
     } else if (sscanf(line, "p %d", &param1) == 1 || sscanf(line, "print %d", &param1) == 1) {
         debug_command.type = PRINT;
         debug_command.param1 = param1;
+    } else if (sscanf(line, "a %d %d", &param1, &param2) == 2 || sscanf(line, "alter %d:%d", &param1, &param2) == 2) {
+        debug_command.type = ALTER;
+        debug_command.param1 = param1;
+        debug_command.param2 = param2;
     } else if (sscanf(line, "m %d", &param1) == 1 || sscanf(line, "move %d", &param1) == 1) {
         debug_command.type = MOVE;
         debug_command.param1 = param1;
@@ -120,6 +125,9 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
         fputs("        ", stderr);
         log_cell_content(array[debug_command.param1], 0);
         fputs("\033[0m\n", stderr);
+        return PAUSED;
+    case ALTER:
+        array[debug_command.param1] = debug_command.param2;
         return PAUSED;
     case MOVE:
         *array_pos = debug_command.param1;
