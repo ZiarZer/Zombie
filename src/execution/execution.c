@@ -112,14 +112,19 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
 
     print_debug_mode_intro();
 
+    int must_display_program_location = 1;
     size_t n;
     char *line = NULL;
     while (program[location.i]) {
         if ((run_state == PAUSED || run_state == STEPPING) && is_valid_operation(program[location.i][location.j])) {
-            fputs("--------------------------\n", stderr);
-            display_program_location(program[location.i], location, BLUE);
+            if (must_display_program_location) {
+                fputs("--------------------------\n", stderr);
+                display_program_location(program[location.i], location, BLUE);
+                must_display_program_location = 0;
+            }
             line = get_debug_console_user_input(&line, &n);
-            enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, &array_pos, &breakpoints);
+            enum debug_run_state new_state =
+                execute_debug_command(line, &previous_command, array, &array_pos, &breakpoints);
             if (new_state == PAUSED) {
                 continue;
             }
@@ -136,6 +141,7 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
         }
 
         command_result = execute_instruction(program[location.i][location.j], array, &array_pos, &location, brackets);
+        must_display_program_location = 1;
         if (command_result != 0) {
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, breakpoints);
