@@ -16,7 +16,7 @@ int init_option_flags(int argc, char *argv[], int *debug_mode, long *size, int *
             *debug_mode = 1;
             break;
         case 'a':
-            *size = check_array_size(optarg);
+            *size = parse_array_size(optarg);
             if (*size < 0)
                 *help_flag = 1;
             break;

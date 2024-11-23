@@ -12,7 +12,7 @@
 
 void free_all(char **program, struct bracket_pair *brackets, struct memory_array *array, map *breakpoints);
 
-int check_array_size(char *array_size_string);
+int parse_array_size(char *array_size_string);
 
 char **getlines(char *filename);
 

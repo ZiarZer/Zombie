@@ -13,15 +13,10 @@ void free_all(char **program, struct bracket_pair *brackets, struct memory_array
     map_destroy(breakpoints);
 }
 
-int check_array_size(char *array_size_string)
-{
-    for (size_t i = 0; array_size_string[i]; i++)
-    {
-        if (array_size_string[i] < '0' || array_size_string[i] > '9')
-        {
-            fprintf(stderr,
-                    "\033[31;1mError: \033[0mInvalid array size (‘%s’)\n",
-                    array_size_string);
+int parse_array_size(char *array_size_string) {
+    for (size_t i = 0; array_size_string[i]; i++) {
+        if (array_size_string[i] < '0' || array_size_string[i] > '9') {
+            fprintf(stderr, "\033[31;1mError: \033[0mInvalid array size (‘%s’)\n", array_size_string);
             return -1;
         }
     }
