@@ -1,11 +1,12 @@
 #include "debug.h"
 
-#define COMMANDS_COUNT 8
+#define COMMANDS_COUNT 9
 
 char *commands[COMMANDS_COUNT][2] = {
     { "continue", "Continue running the program (at the start, or at a breakpoint)." },
     { "next", "Execute next program instruction." },
     { "break", "Add a breakpoint at specified line and column. Syntax: break <line>:<column>" },
+    { "remove", "Remove breakpoint at specified line and column if it exists. Syntax: remove <line>:<column>" },
     { "print", "Print the content of the cell at specified index content. Syntax: print <index>" },
     { "alter", "Change a cell's value. Syntax: alter <index> <int>" },
     { "move", "Move the cursor at specified index. Syntax: move <index>" },
@@ -66,6 +67,10 @@ struct debug_command parse_debug_command(char *line) {
         debug_command.type = BREAK;
         debug_command.param1 = param1;
         debug_command.param2 = param2;
+    } else if (sscanf(line, "r %d:%d", &param1, &param2) == 2 || sscanf(line, "remove %d:%d", &param1, &param2) == 2) {
+        debug_command.type = REMOVE;
+        debug_command.param1 = param1;
+        debug_command.param2 = param2;
     } else if (sscanf(line, "p %d", &param1) == 1 || sscanf(line, "print %d", &param1) == 1) {
         debug_command.type = PRINT;
         debug_command.param1 = param1;
@@ -118,6 +123,9 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
         return TERMINATED;
     case BREAK:
         *breakpoints = add_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
+        return PAUSED;
+    case REMOVE:
+        *breakpoints = remove_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
         return PAUSED;
     case PRINT:
         fputs("\033[1m          ", stderr);
