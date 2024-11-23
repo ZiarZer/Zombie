@@ -10,10 +10,12 @@ all: $(BIN)
 $(BIN): $(SRC)
 	$(CC) $(CFLAGS) -o $(BIN) $(SRC)
 
-debug:
+debug: $(BIN)_debug
+
+$(BIN)_debug:
 	$(CC) $(CFLAGS) -o $(BIN)_debug $(SRC) $(LDFLAGS)
 
-check: $(TESTS) $(BIN) tests/check.sh
+check: $(TESTS) $(BIN)_debug tests/check.sh
 	@./tests/check.sh
 
 format:

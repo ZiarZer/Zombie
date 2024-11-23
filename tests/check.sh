@@ -5,7 +5,7 @@ green='\e[32;1m'
 blue='\e[34;1m'
 normal='\e[0m'
 bold='\e[1m'
-bin='zombie'
+bin='zombie_debug'
 FAILURE_text="$bold[ ${red}FAILURE$normal$bold ]$normal"
 SUCCESS_text="$bold[ ${green}SUCCESS$normal$bold ]$normal"
 
