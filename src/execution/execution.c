@@ -70,8 +70,8 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets, s
             print_runtime_error(program, location, command_result);
             free_all(program, brackets, array, NULL);
             return 3;
-        } else if (array->cursor >= array->size || array->cursor < 0) {
-            print_runtime_error(program, location, array->cursor < 0 ? 2 : 1);
+        } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
+            print_runtime_error(program, location, array->cursor < array->low_bound ? 2 : 1);
             free_all(program, brackets, array, NULL);
             return 3;
         }
@@ -129,11 +129,11 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
         must_display_program_location = 1;
         if (command_result != 0) {
             print_runtime_error(program, location, command_result);
-            free_all(program, brackets, array, breakpoints);
+            free_all(program, brackets, array, NULL);
             return 3;
-        } else if (array->cursor >= array->size || array->cursor < 0) {
-            print_runtime_error(program, location, array->cursor < 0 ? 2 : 1);
-            free_all(program, brackets, array, breakpoints);
+        } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
+            print_runtime_error(program, location, array->cursor < array->low_bound ? 2 : 1);
+            free_all(program, brackets, array, NULL);
             return 3;
         }
 

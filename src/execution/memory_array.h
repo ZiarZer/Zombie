@@ -10,6 +10,8 @@
 struct memory_array {
     unsigned char *data;
     ssize_t size;
+    ssize_t low_bound;
+    ssize_t high_bound;
     ssize_t max_size;
     ssize_t cursor;
 };
