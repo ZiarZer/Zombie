@@ -1,17 +1,13 @@
 #include "debug.h"
 
-#define COMMANDS_COUNT 6
+#define COMMANDS_COUNT 7
 
 char *commands[COMMANDS_COUNT][2] = {
-    { "continue",
-      "Continue running the program (at the start, or at a breakpoint)." },
+    { "continue", "Continue running the program (at the start, or at a breakpoint)." },
     { "next", "Execute next program instruction." },
-    { "break",
-      "Add a breakpoint at specified line and column. Syntax: break "
-      "<line>:<column>" },
-    { "print",
-      "Print the content of the cell at specified index content. Syntax: print "
-      "<index>" },
+    { "break", "Add a breakpoint at specified line and column. Syntax: break <line>:<column>" },
+    { "print", "Print the content of the cell at specified index content. Syntax: print <index>" },
+    { "move", "Move the cursor at specified index. Syntax: move <index>" },
     { "help", "Display help." },
     { "quit", "Stop execution and exit." }
 };
@@ -72,6 +68,9 @@ struct debug_command parse_debug_command(char *line) {
     } else if (sscanf(line, "p %d", &param1) == 1 || sscanf(line, "print %d", &param1) == 1) {
         debug_command.type = PRINT;
         debug_command.param1 = param1;
+    } else if (sscanf(line, "m %d", &param1) == 1 || sscanf(line, "move %d", &param1) == 1) {
+        debug_command.type = MOVE;
+        debug_command.param1 = param1;
     }
     return debug_command;
 }
@@ -93,11 +92,12 @@ char *get_debug_console_user_input(char **lineptr, size_t *nptr) {
  * \param line the user input, nul-terminated and with no newline.
  * \param previous_command the previously built debug command variable.
  * \param array the memory array.
+ * \param array_pos the position of the cursor on the array.
  * \param breakpoints breakpoints map.
  * \return The new debug run state
  */
 enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command, unsigned char *array,
-                                           map **breakpoints) {
+                                           ssize_t *array_pos, map **breakpoints) {
     struct debug_command debug_command = parse_debug_command(line);
     if (debug_command.type == LAST) {
         debug_command = *previous_command;
@@ -120,6 +120,9 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
         fputs("        ", stderr);
         log_cell_content(array[debug_command.param1], 0);
         fputs("\033[0m\n", stderr);
+        return PAUSED;
+    case MOVE:
+        *array_pos = debug_command.param1;
         return PAUSED;
     case HELP:
         print_debugger_help();

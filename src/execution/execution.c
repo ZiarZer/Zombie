@@ -119,7 +119,7 @@ int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets
             fputs("--------------------------\n", stderr);
             display_program_location(program[location.i], location, BLUE);
             line = get_debug_console_user_input(&line, &n);
-            enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, &breakpoints);
+            enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, &array_pos, &breakpoints);
             if (new_state == PAUSED) {
                 continue;
             }
