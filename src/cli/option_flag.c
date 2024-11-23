@@ -6,7 +6,7 @@ int init_option_flags(int argc, char *argv[], int *debug_mode, long *size, int *
     *size = 0;
 
     static struct option longopts[] = { { "debug", no_argument, NULL, 'd' },
-                                        { "arraysize", required_argument, NULL, 's' },
+                                        { "arraysize", required_argument, NULL, 'a' },
                                         { "help", no_argument, NULL, 'h' } };
 
     char ch;
