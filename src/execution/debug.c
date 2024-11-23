@@ -88,46 +88,46 @@ char *get_debug_console_user_input(char **lineptr, size_t *nptr) {
     }
 }
 
-// returns the new debug_run_state (changes with the use of c/continue and
-// n/next)
-enum debug_run_state execute_debug_command(unsigned char *array, map **breakpoints) {
-    char *line = NULL;
-    size_t n;
-    while (1) {
-        line = get_debug_console_user_input(&line, &n);
-
-        struct debug_command debug_command = parse_debug_command(line);
-
-        switch (debug_command.type) {
-        case CONTINUE:
-            free(line);
-            return RUNNING;
-        case NEXT:
-        case LAST:
-            free(line);
-            return PAUSED;
-        case QUIT:
-            free(line);
-            return TERMINATED;
-        case BREAK:
-            *breakpoints = add_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
-            break;
-        case PRINT:
-            fputs("\033[1m          ", stderr);
-            log_cell_position(debug_command.param1, 0);
-            fputs("        ", stderr);
-            log_cell_content(array[debug_command.param1], 0);
-            fputs("\033[0m\n", stderr);
-            break;
-        case HELP:
-            print_debugger_help();
-            break;
-        default:
-            print_debugger_incorrect_command(line);
-        }
+/**
+ * \brief Execute the debug command entered by the user if it is valid.
+ * \param line the user input, nul-terminated and with no newline.
+ * \param previous_command the previously built debug command variable.
+ * \param array the memory array.
+ * \param breakpoints breakpoints map.
+ * \return The new debug run state
+ */
+enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command, unsigned char *array,
+                                           map **breakpoints) {
+    struct debug_command debug_command = parse_debug_command(line);
+    if (debug_command.type == LAST) {
+        debug_command = *previous_command;
     }
-    free(line);
-    return TERMINATED;
+    *previous_command = debug_command;
+
+    switch (debug_command.type) {
+    case CONTINUE:
+        return RUNNING;
+    case NEXT:
+        return STEPPING;
+    case QUIT:
+        return TERMINATED;
+    case BREAK:
+        *breakpoints = add_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
+        return PAUSED;
+    case PRINT:
+        fputs("\033[1m          ", stderr);
+        log_cell_position(debug_command.param1, 0);
+        fputs("        ", stderr);
+        log_cell_content(array[debug_command.param1], 0);
+        fputs("\033[0m\n", stderr);
+        return PAUSED;
+    case HELP:
+        print_debugger_help();
+        return PAUSED;
+    default:
+        print_debugger_incorrect_command(line);
+        return PAUSED;
+    }
 }
 
 char *get_instruction_debug_name(char instruction)

@@ -6,7 +6,7 @@
 #include "breakpoint.h"
 #include "utils.h"
 
-enum debug_run_state { PAUSED, RUNNING, TERMINATED };
+enum debug_run_state { PAUSED, STEPPING, RUNNING, TERMINATED };
 
 enum debug_command_type { CONTINUE, NEXT, BREAK, PRINT, QUIT, HELP, LAST, NONE };
 
@@ -17,7 +17,9 @@ struct debug_command {
 };
 
 void print_debug_mode_intro(void);
-enum debug_run_state execute_debug_command(unsigned char *array, map **breakpoints);
+char *get_debug_console_user_input(char **lineptr, size_t *nptr);
+enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command, unsigned char *array,
+                                           map **breakpoints);
 void log_operation(char **program, unsigned char *array, ssize_t array_pos, struct location location);
 
 #endif /* !DEBUG_H */
