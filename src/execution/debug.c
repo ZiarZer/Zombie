@@ -74,7 +74,7 @@ struct debug_command parse_debug_command(char *line) {
     } else if (sscanf(line, "p %d", &param1) == 1 || sscanf(line, "print %d", &param1) == 1) {
         debug_command.type = PRINT;
         debug_command.param1 = param1;
-    } else if (sscanf(line, "a %d %d", &param1, &param2) == 2 || sscanf(line, "alter %d:%d", &param1, &param2) == 2) {
+    } else if (sscanf(line, "a %d %d", &param1, &param2) == 2 || sscanf(line, "alter %d %d", &param1, &param2) == 2) {
         debug_command.type = ALTER;
         debug_command.param1 = param1;
         debug_command.param2 = param2;
