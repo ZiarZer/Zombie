@@ -2,6 +2,7 @@
 #define BRACKET_PAIR_H
 
 #include "error.h"
+#include "source_file.h"
 
 struct bracket_pair
 {
@@ -14,6 +15,6 @@ struct bracket_pair
 struct location find_matching_bracket(char instruction, struct location,
                                       struct bracket_pair *pairs);
 
-struct bracket_pair *get_bracket_pairs(char **program, char *filename);
+struct bracket_pair *get_bracket_pairs(struct source_file *src_file);
 
 #endif /* BRACKET_PAIR_H*/

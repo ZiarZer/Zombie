@@ -54,12 +54,13 @@ struct bracket_pair *return_after_error(struct location loc, char *line,
     return NULL;
 }
 
-struct bracket_pair *get_bracket_pairs(char **program, char *filename)
-{
+struct bracket_pair *get_bracket_pairs(struct source_file *src_file) {
     struct location *lefts = malloc(0);
     struct bracket_pair *pairs = malloc(0);
     size_t nb_pairs = 0;
     size_t nb_lefts = 0;
+    char **program = src_file->program;
+    char *filename = src_file->filename;
 
     for (size_t i = 0; program[i]; i++)
     {

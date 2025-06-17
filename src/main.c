@@ -18,32 +18,31 @@ int main(int argc, char *argv[]) {
     long size;
     int offset = init_option_flags(argc, argv, &debug_mode, &size, &help_flag);
 
-    char **program = NULL;
-    char *filename = NULL;
     if (offset == argc)
         help_flag = 1;
 
     if ((offset == argc) || help_flag) {
         usage(argv[0]);
         return 1;
-    } else {
-        filename = argv[offset];
-        program = getlines(filename);
     }
-
+    char *filename = argv[offset];
+    char **program = getlines(filename);
     if (!program)
         return 1;
+    struct source_file source = { filename, program };
 
     unsigned long array_size = size;
     if (!array_size)
         array_size = 0;
 
-    struct bracket_pair *brackets = get_bracket_pairs(program, filename);
+    struct bracket_pair *brackets = get_bracket_pairs(&source);
     if (!brackets) {
         free_all(program, brackets, NULL, NULL);
         return 2;
     }
 
-    return debug_mode ? run_debug_mode(program, filename, brackets, array_size)
-                      : run_program(program, filename, brackets, array_size);
+    if (debug_mode) {
+        return run_debug_mode(&source, brackets, array_size);
+    }
+    return run_program(&source, brackets, array_size);
 }

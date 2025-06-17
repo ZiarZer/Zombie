@@ -60,11 +60,12 @@ static inline int is_valid_operation(char operation) {
         || operation == ',' || operation == '[' || operation == ']';
 }
 
-int run_program(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size) {
+int run_program(struct source_file *src_file, struct bracket_pair *brackets, ssize_t array_size) {
     struct memory_array *array = array_init(array_size);
 
-    struct location location = { filename, 0, 0 };
+    struct location location = { src_file->filename, 0, 0 };
     int command_result = 0;
+    char **program = src_file->program;
 
     while (program[location.i]) {
         command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
@@ -89,11 +90,12 @@ int run_program(char **program, char *filename, struct bracket_pair *brackets, s
     return command_result;
 }
 
-int run_debug_mode(char **program, char *filename, struct bracket_pair *brackets, ssize_t array_size) {
+int run_debug_mode(struct source_file *src_file, struct bracket_pair *brackets, ssize_t array_size) {
     struct memory_array *array = array_init(array_size);
 
-    struct location location = { filename, 0, 0 };
+    struct location location = { src_file->filename, 0, 0 };
     int command_result = 0;
+    char **program = src_file->program;
 
     struct debug_command previous_command = { NONE, 0, 0 };
     enum debug_run_state run_state = PAUSED;
