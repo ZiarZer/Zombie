@@ -4,13 +4,13 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <errno.h>
+#include <stdio.h>
 #include <sys/stat.h>
 
-#include "bracket_pair.h"
 #include "map.h"
 #include "memory_array.h"
 
-void free_all(char **program, struct bracket_pair *brackets, struct memory_array *array, map *breakpoints);
+void free_all(char **program, struct memory_array *array, map *breakpoints);
 
 int parse_array_size(char *array_size_string);
 

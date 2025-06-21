@@ -1,9 +1,6 @@
 #include "utils.h"
 
-void free_all(char **program, struct bracket_pair *brackets, struct memory_array *array, map *breakpoints) {
-    if (brackets)
-        free(brackets);
-
+void free_all(char **program, struct memory_array *array, map *breakpoints) {
     for (size_t i = 0; program[i]; i++)
         free(program[i]);
     free(program);

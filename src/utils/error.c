@@ -71,12 +71,11 @@ void print_runtime_error(char **program, struct location loc, enum instruction_r
     fputs("\033[31;1mruntime error: \033[0m", stderr);
     fputs(error_message, stderr);
 
-    display_program_location(program[loc.i], loc, RED);
+    display_program_location(program, loc, RED);
 }
 
-void display_program_location(char *line, struct location location, char *color)
-{
-    char *colored_code = color_text(line, location.j, location.j, color);
+void display_program_location(char **program, struct location location, char *color) {
+    char *colored_code = color_text(program[location.i], location.j, location.j, color);
     char *point_error = point_error_text(location.j, location.j, color);
     fprintf(stderr, " %4ld | %s", location.i + 1, colored_code);
     fprintf(stderr, "      | %s", point_error);
@@ -84,9 +83,8 @@ void display_program_location(char *line, struct location location, char *color)
     free(point_error);
 }
 
-void missing_bracket_error_message(char *line, struct location location)
-{
-    int missing_is_left = line[location.j] == ']';
+void missing_bracket_error_message(char **program, struct location location) {
+    int missing_is_left = program[location.i][location.j] == ']';
 
     fprintf(stderr, "\033[1m%s:%ld:%ld: \033[31msyntax error: \033[0m",
             location.filename, location.i + 1, location.j + 1);
@@ -99,5 +97,5 @@ void missing_bracket_error_message(char *line, struct location location)
                 "‘\033[1m[\033[0m’ with no matching ‘\033[1m]\033[0m’ token, "
                 "\033[0mexpected ‘\033[1m]\033[0m’ before end of file\n");
 
-    display_program_location(line, location, RED);
+    display_program_location(program, location, RED);
 }

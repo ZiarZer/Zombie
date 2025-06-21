@@ -15,37 +15,33 @@ enum instruction_result modify_pointed_value(struct memory_array *array, int is_
     return DONE;
 }
 
-enum instruction_result execute_instruction(char instruction, struct memory_array *array, struct location *location,
-                                            struct bracket_pair *brackets) {
+enum instruction_result execute_instruction(struct instruction **current_instruction, struct memory_array *array) {
     char input;
-    switch (instruction) {
-    case '<':
+    enum instruction_type instruction_type = (*current_instruction)->type;
+    switch (instruction_type) {
+    case LEFT_INSTRUCTION:
         return array_move(array, array->cursor - 1) ? POINTER_LOWER_ERROR : DONE;
-    case '>':
+    case RIGHT_INSTRUCTION:
         return array_move(array, array->cursor + 1) ? POINTER_UPPER_ERROR : DONE;
-    case '+':
-    case '-':
-        return modify_pointed_value(array, instruction == '+');
-    case '.':
+    case ADD_INSTRUCTION:
+    case SUB_INSTRUCTION:
+        return modify_pointed_value(array, instruction_type == ADD_INSTRUCTION);
+    case PRINT_INSTRUCTION:
         putchar(array_get_current(array));
         break;
-    case ',':
+    case SCAN_INSTRUCTION:
         input = getchar();
         array_set_current(array, input == EOF ? '\0' : input);
         break;
-    case '[':
+    case LOOP_INSTRUCTION:
         if (!array_get_current(array)) {
-            struct location right = find_matching_bracket(instruction, *location, brackets);
-            location->i = right.i;
-            location->j = right.j;
+            *current_instruction = (*current_instruction)->matching_instruction;
             return FOUND_BRACKET;
         }
         break;
-    case ']':
+    case ENDLOOP_INSTRUCTION:
         if (array_get_current(array)) {
-            struct location left = find_matching_bracket(instruction, *location, brackets);
-            location->i = left.i;
-            location->j = left.j;
+            *current_instruction = (*current_instruction)->matching_instruction;
             return FOUND_BRACKET;
         }
         break;
@@ -55,45 +51,38 @@ enum instruction_result execute_instruction(char instruction, struct memory_arra
     return DONE;
 }
 
-static inline int is_valid_operation(char operation) {
-    return operation == '+' || operation == '-' || operation == '<' || operation == '>' || operation == '.'
-        || operation == ',' || operation == '[' || operation == ']';
-}
-
-int run_program(struct source_file *src_file, struct bracket_pair *brackets, ssize_t array_size) {
+int run_program(struct source_file *src_file, struct instruction *instructions, ssize_t array_size) {
     struct memory_array *array = array_init(array_size);
 
     struct location location = { src_file->filename, 0, 0 };
     int command_result = 0;
     char **program = src_file->program;
 
-    while (program[location.i]) {
-        command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
+    struct instruction *current_instruction = instructions;
+
+    while (current_instruction->type != ENDPROGRAM_INSTRUCTION) {
+        command_result = execute_instruction(&current_instruction, array);
         if (command_result != FOUND_BRACKET && command_result != DONE) {
-            print_runtime_error(program, location, command_result);
-            free_all(program, brackets, array, NULL);
+            print_runtime_error(program, current_instruction->location, command_result);
+            free_all(program, array, NULL);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
             print_runtime_error(program, location,
                                 array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
-            free_all(program, brackets, array, NULL);
+            free_all(program, array, NULL);
             return 3;
         }
 
-        if (!program[location.i][location.j++]) {
-            location.i += 1;
-            location.j = 0;
-        }
+        current_instruction += 1;
     }
 
-    free_all(program, brackets, array, NULL);
+    free_all(program, array, NULL);
     return command_result;
 }
 
-int run_debug_mode(struct source_file *src_file, struct bracket_pair *brackets, ssize_t array_size) {
+int run_debug_mode(struct source_file *src_file, struct instruction *instructions, ssize_t array_size) {
     struct memory_array *array = array_init(array_size);
 
-    struct location location = { src_file->filename, 0, 0 };
     int command_result = 0;
     char **program = src_file->program;
 
@@ -106,11 +95,13 @@ int run_debug_mode(struct source_file *src_file, struct bracket_pair *brackets, 
     int must_display_program_location = 1;
     size_t n;
     char *line = NULL;
-    while (program[location.i]) {
-        if ((run_state == PAUSED || run_state == STEPPING) && is_valid_operation(program[location.i][location.j])) {
+
+    struct instruction *current_instruction = instructions;
+    while (current_instruction->type != ENDPROGRAM_INSTRUCTION) {
+        if (run_state == PAUSED || run_state == STEPPING) {
             if (must_display_program_location) {
                 fputs("--------------------------\n", stderr);
-                display_program_location(program[location.i], location, BLUE);
+                display_program_location(program, current_instruction->location, BLUE);
                 must_display_program_location = 0;
             }
             line = get_debug_console_user_input(&line, &n);
@@ -122,36 +113,35 @@ int run_debug_mode(struct source_file *src_file, struct bracket_pair *brackets, 
         }
         if (run_state == TERMINATED)
             break;
-        log_operation(program, array, location);
+        log_operation(program, array, current_instruction->location);
         if (run_state == RUNNING) {
-            if (find_breakpoint(breakpoints, location.i + 1, location.j + 1)) {
+            if (find_breakpoint(breakpoints, current_instruction->location.i + 1,
+                                current_instruction->location.j + 1)) {
                 run_state = PAUSED;
-                fprintf(stderr, "Breakpoint at %ld:%ld, pausing execution.\n", location.i + 1, location.j + 1);
+                fprintf(stderr, "Breakpoint at %ld:%ld, pausing execution.\n", current_instruction->location.i + 1,
+                        current_instruction->location.j + 1);
             }
         }
 
-        command_result = execute_instruction(program[location.i][location.j], array, &location, brackets);
+        command_result = execute_instruction(&current_instruction, array);
         must_display_program_location = 1;
         if (command_result == FOUND_BRACKET) {
-            log_operation(program, array, location);
+            log_operation(program, array, current_instruction->location);
         } else if (command_result != DONE) {
-            print_runtime_error(program, location, command_result);
-            free_all(program, brackets, array, NULL);
+            print_runtime_error(program, current_instruction->location, command_result);
+            free_all(program, array, NULL);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
-            print_runtime_error(program, location,
+            print_runtime_error(program, current_instruction->location,
                                 array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
-            free_all(program, brackets, array, NULL);
+            free_all(program, array, NULL);
             return 3;
         }
 
-        if (!program[location.i][location.j++]) {
-            location.i += 1;
-            location.j = 0;
-        }
+        current_instruction += 1;
     }
 
     free(line);
-    free_all(program, brackets, array, breakpoints);
+    free_all(program, array, breakpoints);
     return command_result;
 }

@@ -4,6 +4,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "breakpoint.h"
+#include "location.h"
 #include "utils.h"
 
 enum debug_run_state { PAUSED, STEPPING, RUNNING, TERMINATED };

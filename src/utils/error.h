@@ -21,8 +21,8 @@ enum instruction_result {
 #define BLUE "\033[34;1m"
 
 void print_runtime_error(char **program, struct location location, enum instruction_result error_code);
-void display_program_location(char *line, struct location location, char *color);
+void display_program_location(char **program, struct location location, char *color);
 
-void missing_bracket_error_message(char *line, struct location location);
+void missing_bracket_error_message(char **program, struct location location);
 
-#endif /* ERROR_H */
+#endif /* !ERROR_H */
