@@ -1,13 +1,11 @@
 #include "utils.h"
 
-void free_all(char **program, struct memory_array *array, map *breakpoints) {
+void free_all(char **program, struct memory_array *array) {
     for (size_t i = 0; program[i]; i++)
         free(program[i]);
     free(program);
 
     destroy_array(array);
-
-    map_destroy(breakpoints);
 }
 
 int parse_array_size(char *array_size_string) {

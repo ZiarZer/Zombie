@@ -3,7 +3,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "breakpoint.h"
+#include "instruction.h"
 #include "location.h"
 #include "utils.h"
 
@@ -20,7 +20,7 @@ struct debug_command {
 void print_debug_mode_intro(void);
 char *get_debug_console_user_input(char **lineptr, size_t *nptr);
 enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command,
-                                           struct memory_array *array, map **breakpoints);
+                                           struct memory_array *array, struct instruction *instructions);
 void log_operation(char **program, struct memory_array *array, struct location location);
 
 #endif /* !DEBUG_H */

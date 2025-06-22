@@ -1,6 +1,8 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
+#include <stdbool.h>
+
 #include "location.h"
 
 enum instruction_type {
@@ -19,8 +21,12 @@ struct instruction {
     struct location location;
     enum instruction_type type;
     struct instruction *matching_instruction;
+    bool has_breakpoint;
 };
 
 struct instruction make_instruction(struct location location, enum instruction_type type);
+
+void add_breakpoint(struct instruction *instructions, size_t i, size_t j);
+void remove_breakpoint(struct instruction *instructions, size_t i, size_t j);
 
 #endif /* !INSTRUCTION_H */

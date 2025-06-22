@@ -64,19 +64,19 @@ int run_program(struct source_file *src_file, struct instruction *instructions, 
         command_result = execute_instruction(&current_instruction, array);
         if (command_result != FOUND_BRACKET && command_result != DONE) {
             print_runtime_error(program, current_instruction->location, command_result);
-            free_all(program, array, NULL);
+            free_all(program, array);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
             print_runtime_error(program, location,
                                 array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
-            free_all(program, array, NULL);
+            free_all(program, array);
             return 3;
         }
 
         current_instruction += 1;
     }
 
-    free_all(program, array, NULL);
+    free_all(program, array);
     return command_result;
 }
 
@@ -88,7 +88,6 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
 
     struct debug_command previous_command = { NONE, 0, 0 };
     enum debug_run_state run_state = PAUSED;
-    map *breakpoints = NULL;
 
     print_debug_mode_intro();
 
@@ -105,7 +104,7 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
                 must_display_program_location = 0;
             }
             line = get_debug_console_user_input(&line, &n);
-            enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, &breakpoints);
+            enum debug_run_state new_state = execute_debug_command(line, &previous_command, array, instructions);
             if (new_state == PAUSED) {
                 continue;
             }
@@ -115,8 +114,7 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
             break;
         log_operation(program, array, current_instruction->location);
         if (run_state == RUNNING) {
-            if (find_breakpoint(breakpoints, current_instruction->location.i + 1,
-                                current_instruction->location.j + 1)) {
+            if (current_instruction->has_breakpoint) {
                 run_state = PAUSED;
                 fprintf(stderr, "Breakpoint at %ld:%ld, pausing execution.\n", current_instruction->location.i + 1,
                         current_instruction->location.j + 1);
@@ -129,12 +127,12 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
             log_operation(program, array, current_instruction->location);
         } else if (command_result != DONE) {
             print_runtime_error(program, current_instruction->location, command_result);
-            free_all(program, array, NULL);
+            free_all(program, array);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
             print_runtime_error(program, current_instruction->location,
                                 array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
-            free_all(program, array, NULL);
+            free_all(program, array);
             return 3;
         }
 
@@ -142,6 +140,6 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
     }
 
     free(line);
-    free_all(program, array, breakpoints);
+    free_all(program, array);
     return command_result;
 }

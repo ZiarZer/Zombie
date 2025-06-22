@@ -102,11 +102,11 @@ char *get_debug_console_user_input(char **lineptr, size_t *nptr) {
  * \param line the user input, nul-terminated and with no newline.
  * \param previous_command the previously built debug command variable.
  * \param array the memory array.
- * \param breakpoints breakpoints map.
+ * \param instructions instructions list of the current program.
  * \return The new debug run state
  */
 enum debug_run_state execute_debug_command(char *line, struct debug_command *previous_command,
-                                           struct memory_array *array, map **breakpoints) {
+                                           struct memory_array *array, struct instruction *instructions) {
     struct debug_command debug_command = parse_debug_command(line);
     if (debug_command.type == LAST) {
         if (previous_command->type == NONE)
@@ -123,12 +123,12 @@ enum debug_run_state execute_debug_command(char *line, struct debug_command *pre
     case QUIT:
         return TERMINATED;
     case BREAK:
-        *breakpoints = add_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
+        add_breakpoint(instructions, debug_command.param1 - 1, debug_command.param2 - 1);
         fprintf(stderr, "Breakpoint added at %d:%d\n", debug_command.param1, debug_command.param2);
         return PAUSED;
     case REMOVE:
         fprintf(stderr, "Removing breakpoint at %d:%d (if it exists)\n", debug_command.param1, debug_command.param2);
-        *breakpoints = remove_breakpoint(*breakpoints, debug_command.param1, debug_command.param2);
+        remove_breakpoint(instructions, debug_command.param1 - 1, debug_command.param2 - 1);
         return PAUSED;
     case PRINT:
         fputs("\033[1m          ", stderr);

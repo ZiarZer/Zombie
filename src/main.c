@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     struct instruction *instructions = scan_source(&source);
     int successful_parsing = bind_matching_operations(instructions, &source);
     if (!successful_parsing) {
-        free_all(program, NULL, NULL);
+        free_all(program, NULL);
         return 2;
     }
 
