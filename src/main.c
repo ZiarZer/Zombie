@@ -2,6 +2,8 @@
 #include "option_flag.h"
 #include "parser.h"
 
+#define VERSION "1.0.0"
+
 static inline void usage(char *program_name) {
     fprintf(stderr, "USAGE: %s [options] file\n", program_name);
     fputs("OPTIONS:\n", stderr);
@@ -10,21 +12,31 @@ static inline void usage(char *program_name) {
     fputs("  -a, --arraysize <size>         ", stderr);
     fputs("Specify a size for the memory array, ", stderr);
     fputs("default will be 0 which means infinite size.\n", stderr);
+    fputs("  -v, --version                  Display version\n", stderr);
     fputs("  -h, --help                     Display help\n", stderr);
+}
+
+static inline void version(void) {
+    printf("%s\n", VERSION);
 }
 
 int main(int argc, char *argv[]) {
     int debug_mode;
-    int help_flag;
+    enum prioritary_option prioritary_option_flag;
     long size;
-    int offset = init_option_flags(argc, argv, &debug_mode, &size, &help_flag);
+    int offset = init_option_flags(argc, argv, &debug_mode, &size, &prioritary_option_flag);
 
-    if (offset == argc)
-        help_flag = 1;
+    if (offset == argc && prioritary_option_flag == NO_OPTION) {
+        prioritary_option_flag = HELP_OPTION;
+    }
 
-    if ((offset == argc) || help_flag) {
+    if (prioritary_option_flag == HELP_OPTION) {
         usage(argv[0]);
         return 1;
+    }
+    if (prioritary_option_flag == VERSION_OPTION) {
+        version();
+        return 0;
     }
     char *filename = argv[offset];
     char **program = getlines(filename);
