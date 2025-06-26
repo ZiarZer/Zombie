@@ -97,6 +97,13 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
 
     struct instruction *current_instruction = instructions;
     while (current_instruction->type != ENDPROGRAM_INSTRUCTION) {
+        if (run_state == RUNNING) {
+            if (current_instruction->has_breakpoint || current_instruction->type == BREAK_INSTRUCTION) {
+                run_state = PAUSED;
+                fprintf(stderr, "Breakpoint at %ld:%ld, pausing execution.\n", current_instruction->location.i + 1,
+                        current_instruction->location.j + 1);
+            }
+        }
         if (run_state == PAUSED || run_state == STEPPING) {
             if (must_display_program_location) {
                 fputs("--------------------------\n", stderr);
@@ -113,13 +120,6 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
         if (run_state == TERMINATED)
             break;
         log_operation(program, array, current_instruction->location);
-        if (run_state == RUNNING) {
-            if (current_instruction->has_breakpoint) {
-                run_state = PAUSED;
-                fprintf(stderr, "Breakpoint at %ld:%ld, pausing execution.\n", current_instruction->location.i + 1,
-                        current_instruction->location.j + 1);
-            }
-        }
 
         command_result = execute_instruction(&current_instruction, array);
         must_display_program_location = 1;

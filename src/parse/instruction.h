@@ -6,6 +6,7 @@
 #include "location.h"
 
 enum instruction_type {
+    // Standard BrainFuck instructions
     ADD_INSTRUCTION,
     SUB_INSTRUCTION,
     LEFT_INSTRUCTION,
@@ -14,7 +15,10 @@ enum instruction_type {
     ENDLOOP_INSTRUCTION,
     PRINT_INSTRUCTION,
     SCAN_INSTRUCTION,
-    ENDPROGRAM_INSTRUCTION
+    ENDPROGRAM_INSTRUCTION,
+
+    // Extensions
+    BREAK_INSTRUCTION
 };
 
 struct instruction {

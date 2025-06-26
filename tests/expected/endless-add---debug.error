@@ -6,27 +6,27 @@ For help, type "help".
 (zombie) Breakpoint added at 1:3
 (zombie) [1m   1:1    [at [33m  0[0;1m]    ADD ([34m  0[0m) NUL (\0)[0m
 [1m   1:2    [at [33m  0[0;1m]  LOOP[ ([34m  1[0m) SOH[0m
-[1m   1:3    [at [33m  0[0;1m]    ADD ([34m  1[0m) SOH[0m
 Breakpoint at 1:3, pausing execution.
 --------------------------
-    1 | +[+[34;1m][0m
-      |    [34;1m^[0m
-(zombie) [1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  2[0m) STX[0m
+    1 | +[[34;1m+[0m]
+      |   [34;1m^[0m
+(zombie) [1m   1:3    [at [33m  0[0;1m]    ADD ([34m  1[0m) SOH[0m
+[1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  2[0m) STX[0m
 [1m   1:2    [at [33m  0[0;1m]  LOOP[ ([34m  2[0m) STX[0m
-[1m   1:3    [at [33m  0[0;1m]    ADD ([34m  2[0m) STX[0m
 Breakpoint at 1:3, pausing execution.
 --------------------------
-    1 | +[+[34;1m][0m
-      |    [34;1m^[0m
-(zombie) [1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  3[0m) ETX[0m
+    1 | +[[34;1m+[0m]
+      |   [34;1m^[0m
+(zombie) [1m   1:3    [at [33m  0[0;1m]    ADD ([34m  2[0m) STX[0m
+[1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  3[0m) ETX[0m
 [1m   1:2    [at [33m  0[0;1m]  LOOP[ ([34m  3[0m) ETX[0m
-[1m   1:3    [at [33m  0[0;1m]    ADD ([34m  3[0m) ETX[0m
 Breakpoint at 1:3, pausing execution.
 --------------------------
-    1 | +[+[34;1m][0m
-      |    [34;1m^[0m
+    1 | +[[34;1m+[0m]
+      |   [34;1m^[0m
 (zombie) Removing breakpoint at 1:3 (if it exists)
-(zombie) [1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  4[0m) EOT[0m
+(zombie) [1m   1:3    [at [33m  0[0;1m]    ADD ([34m  3[0m) ETX[0m
+[1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  4[0m) EOT[0m
 [1m   1:2    [at [33m  0[0;1m]  LOOP[ ([34m  4[0m) EOT[0m
 [1m   1:3    [at [33m  0[0;1m]    ADD ([34m  4[0m) EOT[0m
 [1m   1:4    [at [33m  0[0;1m]  LOOP] ([34m  5[0m) ENQ[0m

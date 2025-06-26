@@ -83,21 +83,26 @@ run_test 2 missing_right
 run_test 3 endless-add
 run_test 3 incorrect_value_upper
 run_test 3 incorrect_value_lower
-run_test 3 pointer_out_of_bounds ''                           -a 100
+run_test 3 pointer_out_of_bounds     ''                           -a 100
 run_test 3 multiple_errors
-run_test 3 multiple_errors       ''                           -a 4
-run_test 3 repeat-forever        'out of bounds'              -a 10
+run_test 3 multiple_errors           ''                           -a 4
+run_test 3 repeat-forever            'out of bounds'              -a 10
 
 run_test 0 hello_world
 run_test 0 trailing-comments
 run_test 0 comments
 run_test 0 nine
 run_test 0 simple-loop
+run_test 0 breakpoints-control-chars
+run_test 0 breakpoint-digits
 
-run_test 3 endless-add           "b 1:3\nc\nc\nc\nr 1:3\nc\n" --debug
+run_test 3 endless-add               "b 1:3\nc\nc\nc\nr 1:3\nc\n" --debug
 
-run_test 0 add                   '!#'
-run_test 0 mul                   "\n\n"
+run_test 0 breakpoints-control-chars "c\nc\nc\nc\n"               --debug
+run_test 0 breakpoint-digits         "c\nc\n"                     --debug
+
+run_test 0 add                       '!#'
+run_test 0 mul                       "\n\n"
 
 run_test 0 ZiarZer
 

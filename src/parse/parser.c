@@ -1,6 +1,6 @@
 #include "parser.h"
 
-struct instruction *scan_source(struct source_file *src_file) {
+struct instruction *scan_source(struct source_file *src_file, bool debug_mode) {
     size_t instruction_count = 0;
     struct instruction *instructions = malloc(sizeof(struct instruction));
 
@@ -35,6 +35,11 @@ struct instruction *scan_source(struct source_file *src_file) {
             case ',':
                 instruction_type = SCAN_INSTRUCTION;
                 break;
+            case ';':
+                if (debug_mode) {
+                    instruction_type = BREAK_INSTRUCTION;
+                    break;
+                }
             default:
                 continue;
             }

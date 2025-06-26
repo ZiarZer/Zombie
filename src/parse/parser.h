@@ -5,7 +5,7 @@
 #include "instruction.h"
 #include "source_file.h"
 
-struct instruction *scan_source(struct source_file *src_file);
+struct instruction *scan_source(struct source_file *src_file, bool debug_mode);
 
 int bind_matching_operations(struct instruction *instructions, struct source_file *src_file);
 

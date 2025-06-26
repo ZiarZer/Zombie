@@ -2,7 +2,7 @@
 #include "option_flag.h"
 #include "parser.h"
 
-#define VERSION "1.0.0"
+#define VERSION "1.0.1"
 
 static inline void usage(char *program_name) {
     fprintf(stderr, "USAGE: %s [options] file\n", program_name);
@@ -21,9 +21,9 @@ static inline void version(void) {
 }
 
 int main(int argc, char *argv[]) {
-    int debug_mode;
-    enum prioritary_option prioritary_option_flag;
-    long size;
+    bool debug_mode = false;
+    enum prioritary_option prioritary_option_flag = NO_OPTION;
+    long size = 0;
     int offset = init_option_flags(argc, argv, &debug_mode, &size, &prioritary_option_flag);
 
     if (offset == argc && prioritary_option_flag == NO_OPTION) {
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     if (!array_size)
         array_size = 0;
 
-    struct instruction *instructions = scan_source(&source);
+    struct instruction *instructions = scan_source(&source, debug_mode);
     int successful_parsing = bind_matching_operations(instructions, &source);
     if (!successful_parsing) {
         free_all(program, NULL);
