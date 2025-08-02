@@ -55,8 +55,5 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
-    if (debug_mode) {
-        return run_debug_mode(&source, instructions, array_size);
-    }
-    return run_program(&source, instructions, array_size);
+    return run_program(&source, instructions, array_size, debug_mode);
 }

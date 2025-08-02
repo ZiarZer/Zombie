@@ -51,46 +51,31 @@ enum instruction_result execute_instruction(struct instruction **current_instruc
     return DONE;
 }
 
-int run_program(struct source_file *src_file, struct instruction *instructions, ssize_t array_size) {
-    struct memory_array *array = array_init(array_size);
-
-    struct location location = { src_file->filename, 0, 0 };
+int run_execution_loop(struct source_file *src_file, struct instruction *start, struct memory_array *array) {
     int command_result = 0;
     char **program = src_file->program;
-
-    struct instruction *current_instruction = instructions;
-
+    struct instruction *current_instruction = start;
     while (current_instruction->type != ENDPROGRAM_INSTRUCTION) {
         command_result = execute_instruction(&current_instruction, array);
         if (command_result != FOUND_BRACKET && command_result != DONE) {
             print_runtime_error(program, current_instruction->location, command_result);
-            free_all(program, array);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
-            print_runtime_error(program, location,
+            print_runtime_error(program, current_instruction->location,
                                 array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
-            free_all(program, array);
             return 3;
         }
-
         current_instruction += 1;
     }
-
-    free_all(program, array);
     return command_result;
 }
 
-int run_debug_mode(struct source_file *src_file, struct instruction *instructions, ssize_t array_size) {
-    struct memory_array *array = array_init(array_size);
-
+int run_debug_execution_loop(struct source_file *src_file, struct instruction *instructions,
+                             struct memory_array *array) {
     int command_result = 0;
     char **program = src_file->program;
-
     struct debug_command previous_command = { NONE, 0, 0 };
     enum debug_run_state run_state = PAUSED;
-
-    print_debug_mode_intro();
-
     int must_display_program_location = 1;
     size_t n;
     char *line = NULL;
@@ -127,12 +112,10 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
             log_operation(program, array, current_instruction->location);
         } else if (command_result != DONE) {
             print_runtime_error(program, current_instruction->location, command_result);
-            free_all(program, array);
             return 3;
         } else if (array->cursor > array->high_bound || array->cursor < array->low_bound) {
             print_runtime_error(program, current_instruction->location,
                                 array->cursor < array->low_bound ? POINTER_LOWER_ERROR : POINTER_UPPER_ERROR);
-            free_all(program, array);
             return 3;
         }
 
@@ -140,6 +123,21 @@ int run_debug_mode(struct source_file *src_file, struct instruction *instruction
     }
 
     free(line);
+    return command_result;
+}
+
+int run_program(struct source_file *src_file, struct instruction *instructions, ssize_t array_size, bool debug_mode) {
+    struct memory_array *array = array_init(array_size);
+    char **program = src_file->program;
+
+    int command_result;
+    if (debug_mode) {
+        print_debug_mode_intro();
+        command_result = run_debug_execution_loop(src_file, instructions, array);
+    } else {
+        command_result = run_execution_loop(src_file, instructions, array);
+    }
+
     free_all(program, array);
     return command_result;
 }

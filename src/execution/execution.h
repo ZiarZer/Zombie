@@ -7,8 +7,6 @@
 #include "memory_array.h"
 #include "source_file.h"
 
-int run_program(struct source_file *src_file, struct instruction *instructions, ssize_t array_size);
-
-int run_debug_mode(struct source_file *src_file, struct instruction *instructions, ssize_t array_size);
+int run_program(struct source_file *src_file, struct instruction *instructions, ssize_t array_size, bool debug_mode);
 
 #endif /* EXECUTION_H */
