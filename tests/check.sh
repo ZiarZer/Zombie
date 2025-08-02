@@ -20,7 +20,7 @@ echo >tests/stderr
 echo >tests/stdout
 
 printf "$blue\tBrainFuck Interpreter testsuite$normal\n"
-printf "$blue\t===============================$normal\n\n"
+printf "$blue\t===============================$normal\n"
 
 total=0
 success=0
@@ -50,8 +50,10 @@ run_test() {
 
     printf "$input" | ./"$bin" "$@" tests/"$file".bf 2> tests/stderr 1> tests/stdout
 
-    if [ "$?" -ne "$expected_return" ]; then
+    received_return="$?"
+    if [ "$received_return" -ne "$expected_return" ]; then
         passed_test=1
+        echo "\033[1m$file.bf:\033[0m expected return $expected_return, got $received_return"
     fi
 
     outputfile="$file"
@@ -80,6 +82,7 @@ run_test() {
 run_test 1 file_not_found
 run_test 2 missing_left
 run_test 2 missing_right
+run_test 2 extension-syntax-error    ''                           -e
 run_test 3 endless-add
 run_test 3 incorrect_value_upper
 run_test 3 incorrect_value_lower
@@ -95,6 +98,7 @@ run_test 0 nine
 run_test 0 simple-loop
 run_test 0 breakpoints-control-chars
 run_test 0 breakpoint-digits
+run_test 0 extension-syntax-error
 
 run_test 3 endless-add               "b 1:3\nc\nc\nc\nr 1:3\nc\n" --debug
 

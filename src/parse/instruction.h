@@ -35,6 +35,9 @@ struct instruction {
     bool has_breakpoint;
 };
 
+char get_char_from_instruction_type(enum instruction_type type);
+enum instruction_type get_matching_type(enum instruction_type type);
+
 struct instruction make_instruction(struct location location, enum instruction_type type);
 
 void add_breakpoint(struct instruction *instructions, size_t i, size_t j);

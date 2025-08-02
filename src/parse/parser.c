@@ -79,34 +79,38 @@ struct instruction *scan_source(struct source_file *src_file, struct program_par
 }
 
 int bind_matching_operations(struct instruction *instructions, struct source_file *src_file) {
-    struct instruction **pending_left_brackets = NULL;
-    size_t pending_left_brackets_count = 0;
+    struct instruction **pending_left = NULL;
+    size_t pending_left_count = 0;
 
     for (size_t i = 0; (instructions + i)->type != ENDPROGRAM_INSTRUCTION; i++) {
         struct instruction *current_instruction = instructions + i;
-        if (current_instruction->type == LOOP_INSTRUCTION) {
-            pending_left_brackets =
-                realloc(pending_left_brackets, sizeof(struct instruction *) * (pending_left_brackets_count + 1));
-            pending_left_brackets[pending_left_brackets_count++] = current_instruction;
-        } else if (current_instruction->type == ENDLOOP_INSTRUCTION) {
-            if (pending_left_brackets_count == 0) {
-                missing_bracket_error_message(src_file->program, current_instruction->location);
-                free(pending_left_brackets);
+        if (current_instruction->type == LOOP_INSTRUCTION || current_instruction->type == NEWTHREAD_INSTRUCTION) {
+            pending_left = realloc(pending_left, sizeof(struct instruction *) * (pending_left_count + 1));
+            pending_left[pending_left_count++] = current_instruction;
+        } else if (current_instruction->type == ENDLOOP_INSTRUCTION
+                   || current_instruction->type == ENDTHREAD_INSTRUCTION) {
+            if (pending_left_count == 0) {
+                unmatched_symbol_error_message(src_file->program, current_instruction);
+                free(pending_left);
                 return 0;
             }
-            struct instruction *matching_left = pending_left_brackets[pending_left_brackets_count - 1];
+            struct instruction *matching_left = pending_left[pending_left_count - 1];
+            if (matching_left->type != get_matching_type(current_instruction->type)) {
+                unmatched_symbol_error_message(src_file->program, current_instruction);
+                free(pending_left);
+                return 0;
+            }
             matching_left->matching_instruction = current_instruction;
             current_instruction->matching_instruction = matching_left;
-            pending_left_brackets =
-                realloc(pending_left_brackets, sizeof(struct instruction *) * (--pending_left_brackets_count));
+            pending_left = realloc(pending_left, sizeof(struct instruction *) * (--pending_left_count));
         }
     }
-    if (pending_left_brackets_count > 0) {
-        struct instruction *last_left_bracket = pending_left_brackets[pending_left_brackets_count - 1];
-        missing_bracket_error_message(src_file->program, last_left_bracket->location);
-        free(pending_left_brackets);
+    if (pending_left_count > 0) {
+        struct instruction *last_left = pending_left[pending_left_count - 1];
+        unmatched_symbol_error_message(src_file->program, last_left);
+        free(pending_left);
         return 0;
     }
-    free(pending_left_brackets);
+    free(pending_left);
     return 1;
 }

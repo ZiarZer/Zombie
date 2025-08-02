@@ -6,7 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "location.h"
+#include "instruction.h"
 
 enum instruction_result {
     DONE,
@@ -23,6 +23,6 @@ enum instruction_result {
 void print_runtime_error(char **program, struct location location, enum instruction_result error_code);
 void display_program_location(char **program, struct location location, char *color);
 
-void missing_bracket_error_message(char **program, struct location location);
+void unmatched_symbol_error_message(char **program, struct instruction *unmatched_instruction);
 
 #endif /* !ERROR_H */

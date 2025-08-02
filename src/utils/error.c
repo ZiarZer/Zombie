@@ -83,19 +83,21 @@ void display_program_location(char **program, struct location location, char *co
     free(point_error);
 }
 
-void missing_bracket_error_message(char **program, struct location location) {
-    int missing_is_left = program[location.i][location.j] == ']';
+void unmatched_symbol_error_message(char **program, struct instruction *unmatched_instruction) {
+    struct location location = unmatched_instruction->location;
+    char unmatched_char = get_char_from_instruction_type(unmatched_instruction->type);
+    char expected_char = get_char_from_instruction_type(get_matching_type(unmatched_instruction->type));
+    bool missing_is_left = unmatched_char == ']' || unmatched_char == '}';
 
-    fprintf(stderr, "\033[1m%s:%ld:%ld: \033[31msyntax error: \033[0m",
-            location.filename, location.i + 1, location.j + 1);
-
-    if (missing_is_left)
+    fprintf(stderr, "\033[1m%s:%ld:%ld: \033[31msyntax error: \033[0m", location.filename, location.i + 1,
+            location.j + 1);
+    if (missing_is_left) {
+        fprintf(stderr, "expected ‘\033[1m%c\033[0m’ before ‘\033[1m%c\033[0m’ token\n", expected_char, unmatched_char);
+    } else {
         fprintf(stderr,
-                "expected ‘\033[1m[\033[0m’ before ‘\033[1m]\033[0m’ token\n");
-    else
-        fprintf(stderr,
-                "‘\033[1m[\033[0m’ with no matching ‘\033[1m]\033[0m’ token, "
-                "\033[0mexpected ‘\033[1m]\033[0m’ before end of file\n");
-
+                "‘\033[1m%c\033[0m’ with no matching ‘\033[1m%c\033[0m’ token, "
+                "\033[0mexpected ‘\033[1m%c\033[0m’ before end of file\n",
+                unmatched_char, expected_char, expected_char);
+    }
     display_program_location(program, location, RED);
 }
