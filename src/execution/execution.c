@@ -16,7 +16,7 @@ enum instruction_result modify_pointed_value(struct memory_array *array, int is_
 }
 
 enum instruction_result execute_instruction(struct instruction **current_instruction, struct memory_array *array) {
-    char input;
+    char value;
     enum instruction_type instruction_type = (*current_instruction)->type;
     switch (instruction_type) {
     case LEFT_INSTRUCTION:
@@ -30,8 +30,8 @@ enum instruction_result execute_instruction(struct instruction **current_instruc
         putchar(array_get_current(array));
         break;
     case SCAN_INSTRUCTION:
-        input = getchar();
-        array_set_current(array, input == EOF ? '\0' : input);
+        value = getchar();
+        array_set_current(array, value == EOF ? '\0' : value);
         break;
     case LOOP_INSTRUCTION:
         if (!array_get_current(array)) {
@@ -44,6 +44,11 @@ enum instruction_result execute_instruction(struct instruction **current_instruc
             *current_instruction = (*current_instruction)->matching_instruction;
             return FOUND_BRACKET;
         }
+        break;
+    case SLEEP_INSTRUCTION:
+        value = array_get_current(array);
+        struct timespec time = { value / 1000L, value % 1000L * 1000000L };
+        nanosleep(&time, NULL); // Ignore return value for now
         break;
     default:
         break;

@@ -2,7 +2,7 @@
 #include "option_flag.h"
 #include "parser.h"
 
-#define VERSION "1.0.1"
+#define VERSION "1.0.2"
 
 static inline void usage(char *program_name) {
     fprintf(stderr, "USAGE: %s [options] file\n", program_name);

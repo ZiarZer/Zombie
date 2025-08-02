@@ -1,6 +1,8 @@
 #ifndef EXECUTION_H
 #define EXECUTION_H
 
+#include <time.h>
+
 #include "debug.h"
 #include "error.h"
 #include "instruction.h"
