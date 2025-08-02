@@ -17,8 +17,15 @@ enum instruction_type {
     SCAN_INSTRUCTION,
     ENDPROGRAM_INSTRUCTION,
 
-    // Extensions
-    BREAK_INSTRUCTION
+    // --debug
+    BREAK_INSTRUCTION,
+
+    // --extension
+    NEWTHREAD_INSTRUCTION,
+    ENDTHREAD_INSTRUCTION,
+    LOCK_INSTRUCTION,
+    UNLOCK_INSTRUCTION,
+    SLEEP_INSTRUCTION
 };
 
 struct instruction {

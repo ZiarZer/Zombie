@@ -1,6 +1,6 @@
 #include "parser.h"
 
-struct instruction *scan_source(struct source_file *src_file, bool debug_mode) {
+struct instruction *scan_source(struct source_file *src_file, struct program_params *params) {
     size_t instruction_count = 0;
     struct instruction *instructions = malloc(sizeof(struct instruction));
 
@@ -36,8 +36,33 @@ struct instruction *scan_source(struct source_file *src_file, bool debug_mode) {
                 instruction_type = SCAN_INSTRUCTION;
                 break;
             case ';':
-                if (debug_mode) {
+                if (params->debug_mode) {
                     instruction_type = BREAK_INSTRUCTION;
+                    break;
+                }
+            case '{':
+                if (params->extension_enabled) {
+                    instruction_type = NEWTHREAD_INSTRUCTION;
+                    break;
+                }
+            case '}':
+                if (params->extension_enabled) {
+                    instruction_type = ENDTHREAD_INSTRUCTION;
+                    break;
+                }
+            case '#':
+                if (params->extension_enabled) {
+                    instruction_type = LOCK_INSTRUCTION;
+                    break;
+                }
+            case '%':
+                if (params->extension_enabled) {
+                    instruction_type = UNLOCK_INSTRUCTION;
+                    break;
+                }
+            case '|':
+                if (params->extension_enabled) {
+                    instruction_type = SLEEP_INSTRUCTION;
                     break;
                 }
             default:
